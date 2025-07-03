@@ -1,1 +1,1 @@
-A simple gear planner for the MMORPG Lord of the Rings Online, pulling item data from the Lotro Wiki and saving the gear config in the browser's local storage on every change.
+A simple gear planner for the MMORPG Lord of the Rings Online, pulling item data from the Lotro Wiki and saving the gear config in the browser's local storage.
