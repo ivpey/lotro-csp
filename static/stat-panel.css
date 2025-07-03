@@ -1,0 +1,221 @@
+/* 
+-- =================
+-- STAT PANEL PAGE
+-- =================
+*/
+
+.inner {
+    width: 600px;
+    margin-top: 50px;
+}
+
+table#jewelry {
+    float: left;
+}
+table#armor {
+    float: right;
+}
+
+tr {
+    position: relative;
+    display: block;
+    margin-bottom: 5px;
+}
+
+#jewelry .item img,
+#armor .item img {
+    width: 55px;
+    height: 55px;
+    border: 5px solid;
+    border-image-slice: 1;
+    border-width: 5px;
+    border-image-source: linear-gradient(90deg,rgba(205, 204, 206, 1) 41%, rgba(149, 149, 148, 1) 69%, rgba(102, 102, 103, 1) 100%);
+}
+
+.item {
+    cursor: pointer;
+}
+
+.item + td {
+    position: absolute;
+    width: 300px;
+    background: white;
+    padding: 20px 20px 10px 20px;
+    z-index: 1;
+}
+
+#jewelry .item + td {
+    top: 3px;
+    left: 70px;
+}
+
+#armor .item + td {
+    top: 3px;
+    left: -339px;
+}
+
+.item + td button[type="submit"] {
+    margin-left: 30px;
+    margin-right: 40px;
+}
+
+#jewelry :nth-child(n + 6 of tr) .item + td,
+#armor :nth-child(n + 6 of tr) .item + td {
+    top: auto;
+    bottom: 7px;
+}
+
+
+button {
+    padding: 10px;
+    border-radius: 10px;
+}
+
+input {
+    text-align: center;
+    background-color: #ccc;
+    border: 1px solid #ccc;
+    padding: 10px 20px;
+    border-radius: 5px;
+    display: block;
+    margin-bottom: 15px;
+    width: 260px;
+}
+
+#notification {
+    color: #f26b43;
+    margin-top: 25px;
+}
+
+#stat-values {
+    margin-left: 35px;
+    margin-bottom: 25px;
+    margin-top: 25px;
+}
+#stat-values td:first-child {
+    min-width: 250px;
+}
+#stat-values td:nth-child(2),
+#stat-values td:nth-child(3) {
+    min-width: 150px;
+}
+
+td form select {
+    padding: 5px;
+    margin-bottom: 5px;
+}
+
+td form h2 {
+    color: #0D0D0D;
+    margin-top: 0px;
+    margin-bottom: 10px;
+}
+
+#import-export button {
+    display: block;
+    margin-bottom: 10px;
+}
+
+#import-export form * {
+    display: inline;
+}
+
+#import-export #load_stored {
+    width: 480px;
+}
+
+#import-export button + input {
+    width: 557px;
+}
+
+/*
+-- =================
+-- ITEM TOOLTIP
+-- stolen from Lotro-Wiki
+-- =================
+*/
+
+.tooltip ul {
+    list-style: none;
+}
+.tooltip li,
+.tooltip li a {
+    color: white;
+    margin-left: 0px !important;
+}
+.tooltip li.attrib {
+    color: limegreen;
+}
+
+.tooltip figure {
+    margin: 0px 15px 0px 0px;
+}
+
+.tooltip ul {
+    padding: 0px;
+    margin-bottom: 0px;
+}
+
+.tooltip-content > span:first-child {
+    float: left;
+}
+
+.tooltip {
+    position: absolute;
+    top: 2px;
+    left: 70px;
+    visibility: hidden;
+    border: 5px solid;
+    border-image-slice: 1;
+    border-width: 5px;
+    border-image-source: linear-gradient(90deg,rgba(205, 204, 206, 1) 41%, rgba(149, 149, 148, 1) 69%, rgba(102, 102, 103, 1) 100%);
+}
+
+#jewelry .tooltip {
+    top: 3px;
+}
+
+#armor .tooltip {
+    left: -314px;
+}
+
+.item:hover + td + td.tooltip,
+.tooltip:hover {
+    visibility: visible;
+}
+
+#armor :nth-child(n + 6 of tr) .item + td + td.tooltip {
+    top: auto;
+    bottom: 6px;
+}
+
+#jewelry :nth-child(n + 6 of tr) .item + td + td.tooltip {
+    top: auto;
+    bottom: 7px;
+}
+
+
+/* class selection list */
+
+#class-select [type=radio] { 
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+#class-select [type=radio] + img {
+  cursor: pointer;
+}
+
+#class-select [type=radio]:checked + img {
+  outline: 3px solid #A62D12;
+}
+
+#class-select label:not(:first-child) {
+    margin-left: 4px;
+}
+
+#class-select {
+    margin-bottom: 10px;
+}

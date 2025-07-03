@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='stat-panel.css') }}">
+    <title>LOTRO Character Stats Panel</title>
+    <script>
+        localStorage.setItem('gear-config', JSON.stringify("{{char_sheet.itemSlots|safe}}"));
+    </script>
+</head>
+<body id = "stat-panel">
+    <div class="outer">
+        <div class="middle">
+            <div class="inner">
+                <div id="class-select">
+                    <form action="{{ url_for('handle_choices') }}" method="POST">
+                        {% for cl in char_sheet.class_list %}
+                        <label>
+                            <input type="radio" name="class-selection" value="{{ cl }}" onclick="this.parentElement.parentElement.submit()"
+                            {% if char_sheet.class_name == cl %}
+                                checked
+                            {% endif %}
+                            >
+                            <img src="{{ url_for('static', filename = 'class-' + cl | lower + '.png') }}">
+                        </label>
+                        {% endfor %}
+                    </form>
+                </div>
+                <div id="import-export">
+                    <button onclick="this.nextElementSibling.classList.toggle('noshow')">
+                        Import
+                    </button>
+                    <form action = {{ url_for('handle_choices') }} method="POST" class="noshow">
+                        <!-- It is important that we do this as a form submission so the redirect can work -->
+                        <input type="text" id="load_stored" name="load_stored">
+                        <button type="submit" id="load">
+                            Import
+                        </button>
+                    </form>
+                    <button onclick="this.nextElementSibling.classList.toggle('noshow')">
+                        Export
+                    </button>
+                    <input type="text" value="{{char_sheet.itemSlots}}" class="noshow">
+                </div>
+                <div id="table-container" class="clearfix">
+                    <table id="jewelry">
+                        {% for item_slot in char_sheet.itemSlots.items() %}
+                            {% if item_slot[1]['slot-type'] == 'jewelry' %}
+                            <tr>
+                                <td class="item" onclick="this.nextElementSibling.classList.toggle('noshow')">
+                                    <img
+                                        {% if item_slot[1]['item-info']['icon-url'] %}                  
+                                            src="{{item_slot[1]['item-info']['icon-url']}}"
+                                        {% else %}
+                                            src="{{ url_for('static', filename = item_slot[0] + '.png') }}"
+                                        {% endif %}
+                                    >
+                                </td>
+                                <td class="noshow">
+                                    <form method="POST" action= {{ url_for('load_items', item = item_slot[0]) }}>
+                                        <h2>Item name:</h2>
+                                        <input
+                                            name= "{{item_slot[0]}}"
+                                            type="text"
+                                            {% if item_slot[1]['item-info']['name'] %} value="{{ item_slot[1]['item-info']['name'] | format_url_unquote(True) }}" {% endif %}
+                                        >
+                                        {% if item_slot[1]['item-info']['essences'] %}
+                                            <h2>Essence slots:</h2>
+                                            {% for essence in item_slot[1]['item-info']['essences'] %}
+                                                <select name="essence_{{essence}}_stat">
+                                                    <option value="0" {% if item_slot[1]['item-info']['essences'][essence]|length == 0 %} selected {% endif %} disabled>Choose a stat essence...</option>
+                                                    {% for stat in stat_sheet.listAllStats() %}
+                                                    <option value="{{stat}}" {{ 'selected' if stat in item_slot[1]['item-info']['essences'][essence] }}>{{stat}}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <input type="number" name="essence_{{essence}}_value" value="{{ 0 if item_slot[1]['item-info']['essences'][essence].values()|length == 0 else item_slot[1]['item-info']['essences'][essence].values()|list|join }}">
+                                            {% endfor %}
+                                        {% endif %}
+                                        <button type="submit">Update</button>
+                                        <button onclick="document.getElementsByName('{{item_slot[0]}}')[0].value = ''; this.parentElement.submit()">Remove item</button>
+                                    </form>
+                                </td>
+                                {% if item_slot[1]['item-info']['name'] %}
+                                <td class="tooltip">
+                                    {{ item_slot[1]['item-info']['name'] | format_url_unquote | item_tooltip | safe }}
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </table>
+                    <table id="armor">
+                        {% for item_slot in char_sheet.itemSlots.items() %}
+                            {% if item_slot[1]['slot-type'] == 'armor' %}
+                            <tr>
+                                <td class="item" onclick="this.nextElementSibling.classList.toggle('noshow')">
+                                    <img
+                                        {% if item_slot[1]['item-info']['icon-url'] %}                  
+                                            src="{{item_slot[1]['item-info']['icon-url']}}"
+                                        {% else %}
+                                            src="{{ url_for('static', filename = item_slot[0] + '.png') }}"
+                                        {% endif %}
+                                    >
+                                </td>
+                                <td class="noshow">
+                                    <form method="POST" action= {{ url_for('load_items', item = item_slot[0]) }}>
+                                        <h2>Item name:</h2>
+                                        <input
+                                            name= "{{item_slot[0]}}"
+                                            type="text"
+                                            {% if item_slot[1]['item-info']['name'] %} value="{{ item_slot[1]['item-info']['name'] | format_url_unquote(True) }}" {% endif %}
+                                        >
+                                        {% if item_slot[1]['item-info']['essences'] %}
+                                            <h2>Essence slots:</h2>
+                                            {% for essence in item_slot[1]['item-info']['essences'] %}
+                                                <select name="essence_{{essence}}_stat">
+                                                    <option value="" {% if item_slot[1]['item-info']['essences'][essence]|length == 0 %} selected {% endif %} disabled>Choose a stat essence...</option>
+                                                    {% for stat in stat_sheet.listAllStats() %}
+                                                    <option value="{{stat}}" {{ 'selected' if stat in item_slot[1]['item-info']['essences'][essence] }}>{{stat}}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <input type="number" name="essence_{{essence}}_value" value="{{ 0 if item_slot[1]['item-info']['essences'][essence].values()|length == 0 else item_slot[1]['item-info']['essences'][essence].values()|list|join }}">
+                                            {% endfor %}
+                                        {% endif %}
+                                        <button type="submit">Update</button>
+                                        <button onclick="document.getElementsByName('{{item_slot[0]}}')[0].value = ''; this.parentElement.submit()">Remove item</button>
+                                    </form>
+                                </td>
+                                {% if item_slot[1]['item-info']['name'] %}
+                                <td class="tooltip">
+                                    {{ item_slot[1]['item-info']['name'] | format_url_unquote | item_tooltip | safe }}
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </table>
+                </div>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                                <p id="notification">
+                                    {{ message }}
+                                </p>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                <table id="stat-values">
+                        <tr>
+                            <td>Stat</td>
+                            <td>Current loadout</td>
+                            <td>Previous loadout</td>
+                        </tr>
+                    {% for stat in stat_sheet.listAllStats() %}
+                        {% set curr = char_sheet.getTotalStat(stat, stat_sheet) %}
+                        {% set prev = old_stats.getTotalStat(stat, stat_sheet) %}
+                        {% set diff = curr - prev %}
+                        {% set color = ['', 'green', 'red'][0 if diff == 0 else (diff/(diff|abs))|int] %}
+                        <tr>
+                            <td>
+                                {{ stat }}
+                            </td>
+                            <td >
+                                <span>
+                                    {{ curr | round(2) }}
+                                </span>
+                                <span class="{{ color }}">
+                                    ({{ diff | round(2) }})
+                                </span>
+                            </td>
+                            <td>
+                                {{ prev | round(2) }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,81 @@
+/* 
+-- =================
+-- COMMON STYLES
+-- =================
+*/
+
+@font-face {
+  font-family: BlinkMacSystemFontRegular;
+  src: url(blinkmacsystemfont-regular.ttf);
+}
+@font-face {
+  font-family: BlinkMacSystemFontLight;
+  src: url(blinkmacsystemfont-light.ttf);
+}
+@font-face {
+  font-family: BlinkMacSystemFontHeavy;
+  src: url(blinkmacsystemfont-heavy.ttf);
+}
+
+.clearfix:after {
+    content:'';
+    display: table;
+    clear: both;
+}
+
+body {
+    background-color: #0D0D0D;
+    color: #F2F2F2;
+}
+
+/* centering in the middle of the screen */
+/* ------------------------------ */
+.outer {
+  display: table;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.middle {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.inner {
+  margin-left: auto;
+  margin-right: auto;
+}
+/* ------------------------------ */
+
+button {
+  font-family: BlinkMacSystemFontHeavy;
+  font-size: 16px;
+}
+
+button {
+    cursor: pointer;
+    border: 1px solid #A62D12;
+    background-color: #A62D12;
+    color: #F2F2F2;
+}
+
+button:hover {
+    background-color: #F2A950;
+    border-color: #F2A950;
+    color: #404040;
+}
+
+.noshow {
+    visibility: hidden;
+    display: none;
+}
+
+.green {
+    color: green;
+}
+.red {
+    color: red;
+}
