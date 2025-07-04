@@ -10,12 +10,12 @@
     <div class="outer">
         <div class="middle">
             <div class="inner clearfix">
-                <form action = {{ url_for('handle_index_choice') }} method="POST">
+                <form action = {{ url_for('handle_choices') }} method="POST">
                     <button type="submit" id="new">
                         New gear set
                     </button>
                 </form>
-                <form action = {{ url_for('handle_index_choice') }} method="POST">
+                <form action = {{ url_for('handle_choices') }} method="POST">
                     <!-- It is important that we do this as a form submission so the redirect can work -->
                     <input type="text" class="noshow" id="load_stored" name="load_stored">
                     <button type="submit" id="load">

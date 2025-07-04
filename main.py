@@ -19,6 +19,7 @@ from class_QueryWiki import QueryWiki
 # instantiate the app
 # ====================
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'AMRSONPL'
 
 requests_cache.install_cache('demo_cache', expire_after=86400, allowable_methods=('GET'))
 
@@ -158,4 +159,4 @@ def load_items():
     return render_template('stat-panel.html', char_sheet = curr_stats, stat_sheet = stat_sheet, old_stats = old_stats)
 
 if __name__ == '__main__':  
-   app.run()
+   app.run(host = '0.0.0.0', threaded = True)
