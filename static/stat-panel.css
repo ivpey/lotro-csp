@@ -88,9 +88,10 @@ input {
 }
 
 #stat-values {
-    margin-left: 35px;
     margin-bottom: 25px;
     margin-top: 25px;
+    margin-left: auto;
+    margin-right: auto;
 }
 #stat-values td:first-child {
     min-width: 250px;
@@ -218,4 +219,33 @@ td form h2 {
 
 #class-select {
     margin-bottom: 10px;
+}
+
+
+@media (max-width: 615px) {
+    .inner {
+        width: 95%;
+    }
+    #class-select {
+        width: 95%;
+    }
+    .tooltip-content {
+        width: 13em !important;
+    }
+    #stat-values td:first-child {
+        min-width: 165px;
+        max-width: 165px;
+    }
+    #stat-values td:nth-child(2), #stat-values td:nth-child(3) {
+        min-width: 130px;
+        max-width: 130px;
+    }
+    #armor .tooltip {
+        left: -235px;
+    }
+    #class-select form {
+        display: flex;
+        flex-wrap: wrap;
+        place-content: center;
+    }
 }
