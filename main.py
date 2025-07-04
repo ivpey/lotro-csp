@@ -159,4 +159,4 @@ def load_items():
     return render_template('stat-panel.html', char_sheet = curr_stats, stat_sheet = stat_sheet, old_stats = old_stats)
 
 if __name__ == '__main__':  
-   app.run(host = '0.0.0.0', threaded = True)
+   app.run(host = '0.0.0.0', port = 5000)
