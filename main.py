@@ -1,12 +1,17 @@
 # ====================
 # import packages
 # ====================
-from flask import Flask, render_template, request, flash, redirect, url_for
+from flask import Flask, render_template, request, flash, redirect, url_for, session
 import requests
 import requests_cache
 import urllib
 import copy
 import ast
+from uuid import uuid4
+from base64 import b64encode, b64decode
+import zlib
+from datetime import timedelta
+import json
 
 # ====================
 # import the custom class definitions
@@ -20,12 +25,16 @@ from class_QueryWiki import QueryWiki
 # ====================
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'AMRSONPL'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours = 24)
 
-requests_cache.install_cache('demo_cache', expire_after=86400, allowable_methods=('GET'))
+requests_cache.install_cache('lotro-csp-cache', expire_after=86400, allowable_methods=('GET'))
 
-curr_stats = Character_Sheet()
-old_stats = Character_Sheet()
+# this needs to be requested from the Wiki just once for the entire app
 stat_sheet = Stat_Table()
+
+# Class Instances Per User
+# each user session gets its own class instances which we store here against a unique userID
+cipu = {}
 
 @app.template_filter()
 def format_url_unquote(val, isItemName = False):
@@ -56,47 +65,81 @@ def item_tooltip(itemName):
     
     return to_return
 
+@app.template_filter()
+def encode_gear_config(gear_config):
+    return b64encode(zlib.compress(json.dumps(gear_config).encode('utf-8'))).decode('utf-8')
+
 @app.route("/")
 def index():
+
+    if 'user' not in session:
+        session['user'] = str(uuid4().hex)
+        
+    cipu[session['user']] = {
+        'curr_stats' : Character_Sheet(),
+        'old_stats' : Character_Sheet()
+    }
+
     return render_template('index.html')
 
 @app.route("/stats_panel")
 def stats_panel_page():
-    return render_template('stat-panel.html', char_sheet = curr_stats, stat_sheet = stat_sheet, old_stats = old_stats)
+
+    # if a user randomly opens this page without going through index, they do not have initialized classes
+    # => redirect so we can initialize them
+    su = session['user']
+    try:
+        t = cipu[su]['curr_stats']
+    except:
+        return redirect(url_for('index'))
+    
+    return render_template(
+        'stat-panel.html',
+        char_sheet = cipu[su]['curr_stats'],
+        stat_sheet = stat_sheet,
+        old_stats = cipu[su]['old_stats'])
 
 @app.route("/handle_choices", methods = ['POST'])
 def handle_choices():
 
+    # if a user randomly opens this page without going through index, they do not have initialized classes
+    # => redirect so we can initialize them
+    su = session['user']
+    try:
+        t = cipu[su]['curr_stats']
+    except:
+        return redirect(url_for('index'))
+
     import_str = request.form.get('load_stored')
     selected_class = request.form.get('class-selection')
     
-    if (selected_class in curr_stats.class_list):
-        curr_stats.class_name = selected_class
+    if (selected_class in cipu[su]['curr_stats'].class_list):
+        cipu[su]['curr_stats'].class_name = selected_class
         return redirect(url_for('stats_panel_page'))
 
     if import_str is None:
-        curr_stats.itemSlots = Character_Sheet().itemSlots
+        cipu[su]['curr_stats'].itemSlots = Character_Sheet().itemSlots
     else:
         try:
-            a = ast.literal_eval(import_str)
-            if (isinstance(a, dict)):
-                if(a.keys() == Character_Sheet().itemSlots.keys()):
-                    curr_stats.itemSlots = a
-                else:
-                    flash('Import failed.')
-            else:
-                try:
-                    a = ast.literal_eval(a)
-                    if (isinstance(a, dict)):
-                        if(a.keys() == Character_Sheet().itemSlots.keys()):
-                            curr_stats.itemSlots = a
-                        else:
-                            flash('Import failed.')
-                    else:
-                        flash('Import failed.')
-                except:
-                    flash('Import failed.')
+            # coming from import field
+            a = json.loads(zlib.decompress(b64decode(import_str)).decode('utf-8'))
         except:
+            # loaded from local storage
+            a = ast.literal_eval(ast.literal_eval(import_str))
+        if (isinstance(a, dict)):
+            e = False
+            for k in a.keys():
+                if(k not in Character_Sheet().itemSlots.keys()):
+                    print('contains unknown key')
+                    e = True
+            if not e:
+                print('we got a correct dict')
+                cipu[su]['curr_stats'].itemSlots = a
+            else:
+                print('we got wrongly defined dict')
+                flash('Import failed.')
+        else:
+            print('not instance of dict')
             flash('Import failed.')
 
     return redirect(url_for('stats_panel_page'))
@@ -104,27 +147,35 @@ def handle_choices():
 @app.route("/load_items", methods = ['POST'])
 def load_items():
 
+    # if a user randomly opens this page without going through index, they do not have initialized classes
+    # => redirect so we can initialize them
+    su = session['user']
+    try:
+        t = cipu[su]['curr_stats']
+    except:
+        return redirect(url_for('index'))
+
     selected_class = request.form.get('class-selection')
-    if (selected_class in curr_stats.class_list):
-        curr_stats.class_name = selected_class
+    if (selected_class in cipu[su]['curr_stats'].class_list):
+        cipu[su]['curr_stats'].class_name = selected_class
 
     item_slot = request.args.get('item')
     item_name = str.strip(request.form.get(item_slot), '[ ]')
 
-    old_stats = copy.deepcopy(curr_stats)
+    cipu[su]['old_stats'] = copy.deepcopy(cipu[su]['curr_stats'])
 
     # deleting an item
     if (item_slot and item_name == ''):
-        flash(curr_stats.validateSlotUpdate(item_slot, {}, None), item_slot)
+        flash(cipu[su]['curr_stats'].validateSlotUpdate(item_slot, {}, None), item_slot)
     else:
         try:
-            existingItemName = curr_stats.itemSlots[item_slot]['item-info']['name']
+            existingItemName = cipu[su]['curr_stats'].itemSlots[item_slot]['item-info']['name']
             newItemName = urllib.parse.quote_plus(item_name).replace('+', '_')
             
             # same item -> we make no request, only handle essences if applicable
             if (newItemName == existingItemName):
                 try:
-                    essence_count = len(curr_stats.itemSlots[item_slot]['item-info']['essences'])
+                    essence_count = len(cipu[su]['curr_stats'].itemSlots[item_slot]['item-info']['essences'])
                     essences = {}
                     for i in range(essence_count):
                         essence_stat_name = request.form.get('essence_'+str(i+1)+'_stat')
@@ -137,14 +188,14 @@ def load_items():
                             }
                         else:
                             essences[str(i+1)] = {}
-                    flash(curr_stats.validateSlotUpdate(item_slot, None, essences), item_slot)
+                    flash(cipu[su]['curr_stats'].validateSlotUpdate(item_slot, None, essences), item_slot)
                 except:
                     pass
             # submitted an item with a different name -> request new
             else:
                 wikiResp = QueryWiki().get(item_name)
                 if (wikiResp['item']['error'] is None):
-                    flash(curr_stats.validateSlotUpdate(item_slot, wikiResp, None), item_slot)
+                    flash(cipu[su]['curr_stats'].validateSlotUpdate(item_slot, wikiResp, None), item_slot)
                 else:
                     flash(wikiResp['item']['error'], item_slot)
         
@@ -152,11 +203,15 @@ def load_items():
         except:
             wikiResp = QueryWiki().get(item_name)
             if (wikiResp['item']['error'] is None):
-                flash(curr_stats.validateSlotUpdate(item_slot, wikiResp, None), item_slot)
+                flash(cipu[su]['curr_stats'].validateSlotUpdate(item_slot, wikiResp, None), item_slot)
             else:
                 flash(wikiResp['item']['error'], item_slot)
 
-    return render_template('stat-panel.html', char_sheet = curr_stats, stat_sheet = stat_sheet, old_stats = old_stats)
+    return render_template(
+        'stat-panel.html',
+        char_sheet = cipu[su]['curr_stats'],
+        stat_sheet = stat_sheet,
+        old_stats = cipu[su]['old_stats'])
 
 if __name__ == '__main__':  
    app.run(host = '0.0.0.0', port = 5000)
