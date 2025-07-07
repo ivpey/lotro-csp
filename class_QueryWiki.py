@@ -77,6 +77,7 @@ class QueryWiki:
                 'name' : urllib.parse.quote_plus(itemName).replace('+', '_'),
                 'slot' : None if ((self.__wikiItem is None) or self.__wikiItem.find('slot') == -1) else str.strip(self.__wikiItem.split('slot')[1].split('\n|')[0].lower(), ' =\t'),
                 'type' : None if ((self.__wikiItem is None) or self.__wikiItem.find('type') == -1) else str.strip(self.__wikiItem.split('type')[1].split('\n|')[0].lower(), ' =\t'),
+                'scaled' : None if ((self.__wikiItem is None) or self.__wikiItem.find('scaled') == -1) else str.strip(self.__wikiItem.split('scaled')[1].split('\n|')[0].lower(), ' =\t'),
                 'attrib' : None if (self.__wikiItem is None) else [str.strip(x, ' =\t') for x in self.__wikiItem.split('attrib')[1].split('\n|')[0].split(' <br> ')],
                                                                                                           # we are checking length because certain items from Legacy of Morgoth with specific essences
                                                                                                           # (e.g. cloak or neck), get returned from the API with empty (but existing!) attribute "essences"

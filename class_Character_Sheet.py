@@ -94,6 +94,9 @@ class Character_Sheet:
                         slotData['item']['slot'] == slot.split('-')[0]              # jewelry typically only has TYPE, but found some rings which have both SLOT and TYPE
                     ):
 
+                        if (slotData['item']['scaled'] is not None):
+                            notification_msg = f'Exact stat values cannot be determined for scaled item in slot {slot.upper()}. It will not contribute to stat calculations.'
+
                         self.__updateSlot(slot, slotData, essences)
 
                     else:
@@ -109,6 +112,9 @@ class Character_Sheet:
                         slot in ['head', 'shoulder', 'back', 'chest', 'gloves', 'legs', 'feet']
                     ):
                         
+                        if (slotData['item']['scaled'] is not None):
+                            notification_msg = f'Exact stat values cannot be determined for scaled item in slot {slot.upper()}. It will not contribute to stat calculations.'
+
                         self.__updateSlot(slot, slotData, essences)
                         notification_msg = f'The item slot could not be verified in the Wiki. Updated {slot.upper()} slot.'
 
@@ -116,6 +122,9 @@ class Character_Sheet:
                     else:
 
                         if (slotData['item']['type'] == slot.split('-')[0]):
+
+                            if (slotData['item']['scaled'] is not None):
+                                notification_msg = f'Exact stat values cannot be determined for scaled item in slot {slot.upper()}. It will not contribute to stat calculations.'
 
                             self.__updateSlot(slot, slotData, essences)
 
@@ -130,6 +139,9 @@ class Character_Sheet:
                         or
                         slotData['item']['slot'] == slot.split('-')[0]  # found some earring which has SLOT but not TYPE
                     ):
+
+                        if (slotData['item']['scaled'] is not None):
+                            notification_msg = f'Exact stat values cannot be determined for scaled item in slot {slot.upper()}. It will not contribute to stat calculations.'
 
                         self.__updateSlot(slot, slotData, essences)
 
