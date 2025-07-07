@@ -41,8 +41,17 @@
                     <button onclick="this.nextElementSibling.classList.toggle('noshow')">
                         Export
                     </button>
-                    <input type="text" value="{{char_sheet.itemSlots}}" class="noshow">
+                    <input type="text" value="{{char_sheet.itemSlots | encode_gear_config}}" class="noshow">
                 </div>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                                <p id="notification">
+                                    {{ message }}
+                                </p>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
                 <div id="table-container" class="clearfix">
                     <table id="jewelry">
                         {% for item_slot in char_sheet.itemSlots.items() %}
@@ -137,15 +146,6 @@
                         {% endfor %}
                     </table>
                 </div>
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                                <p id="notification">
-                                    {{ message }}
-                                </p>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
                 <table id="stat-values">
                         <tr>
                             <td>Stat</td>
