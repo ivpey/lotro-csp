@@ -1,4 +1,4 @@
-A simple gear planner for the MMORPG Lord of the Rings Online, pulling item data from the Lotro Wiki and saving the gear config in the browser's local storage.
+A simple gear planner for the MMORPG Lord of the Rings Online, pulling item data from the Lotro Wiki and saving the gear config in the browser's local storage or as a convenient export string.
 
 ### Known issues:
 - Gear with scaling stats (e.g. from Epic Battles) is displayed on the Wiki with stat ranges instead of a unique value per stat. The item will be loaded in the respective slot but it will not be included in the stat sheet calculations.
