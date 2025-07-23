@@ -4,55 +4,18 @@
 -- =================
 */
 
-@font-face {
-  font-family: BlinkMacSystemFontRegular;
-  src: url(blinkmacsystemfont-regular.ttf);
-}
-@font-face {
-  font-family: BlinkMacSystemFontLight;
-  src: url(blinkmacsystemfont-light.ttf);
-}
-@font-face {
-  font-family: BlinkMacSystemFontHeavy;
-  src: url(blinkmacsystemfont-heavy.ttf);
-}
-
-.clearfix:after {
-    content:'';
-    display: table;
-    clear: both;
-}
-
 body {
-    background-color: #0D0D0D;
+    background-image: url(main_bg.png);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     color: #F2F2F2;
 }
 
-/* centering in the middle of the screen */
-/* ------------------------------ */
-.outer {
-  display: table;
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-}
-
-.middle {
-  display: table-cell;
-  vertical-align: middle;
-}
-
 .inner {
-  margin-left: auto;
-  margin-right: auto;
-}
-/* ------------------------------ */
-
-button {
-  font-family: BlinkMacSystemFontHeavy;
-  font-size: 16px;
+    width: 1100px;
+    display: flex; /* in #main, this ensures that the gear panel takes up the whole vertical space */
+    flex-direction: column;
 }
 
 button {
@@ -60,6 +23,9 @@ button {
     border: 1px solid #A62D12;
     background-color: #A62D12;
     color: #F2F2F2;
+    font-size: 16px;
+    padding: 10px;
+    border-radius: 10px;
 }
 
 button:hover {
@@ -68,9 +34,17 @@ button:hover {
     color: #404040;
 }
 
+input {
+  text-align: center;
+  background-color: #ccc;
+  border: 1px solid #ccc;
+  padding: 10px 20px;
+  border-radius: 5px;
+}
+
 .noshow {
     visibility: hidden;
-    display: none;
+    display: none !important;
 }
 
 .green {
@@ -79,3 +53,65 @@ button:hover {
 .red {
     color: red;
 }
+
+/*
+-- =================
+-- DECORATIVE BORDER STYLES
+-- =================
+*/
+.b1-parent-container {
+    display: grid;
+    grid-template-columns: 22px 14px auto 14px 22px;
+    grid-template-rows: 22px 14px auto 14px 22px;
+}
+.b1-tl {
+    grid-column: 1 / span 2;
+    grid-row: 1 / span 2;
+    background-image: url(border-top-left.png);
+}
+.b1-tm {
+    grid-column: 3;
+    grid-row: 1;
+    background-image: url(border-top.png);
+}
+.b1-tr {
+    grid-column: 4 / span 2;
+    grid-row: 1 / span 2;
+    background-image: url(border-top-right.png);
+}
+.b1-l {
+    grid-column: 1;
+    grid-row: 3;
+    background-image: url(border-left.png);
+}
+.b1-content {
+    grid-column: 2 / span 3;
+    grid-row: 2 / span 3;
+    background-color: rgba(0, 0, 0, 0.92);
+}
+.b1-r {
+    grid-column: 5;
+    grid-row: 3;
+    background-image: url(border-right.png);
+}
+.b1-bl {
+    grid-column: 1 / span 2;
+    grid-row: 4 / span 2;
+    background-image: url(border-bottom-left.png);
+}
+.b1-bm {
+    grid-column: 3;
+    grid-row: 5;
+    background-image: url(border-bottom.png);
+}
+.b1-br {
+    grid-column: 4 / span 2;
+    grid-row: 4 / span 2;
+    background-image: url(border-bottom-right.png);
+}
+/*
+-- =================
+-- END
+-- DECORATIVE BORDER STYLES
+-- =================
+*/
