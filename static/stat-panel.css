@@ -1,19 +1,109 @@
+@font-face {
+  font-family: Aniron;
+  src: url(aniron/anirm___.ttf);
+}
+
+body {
+    margin: 0;
+}
+
+h1 {
+    font-family: Aniron;
+    color: #F2A950;
+    width: 100%;
+    text-align: center;
+}
+
 /* 
 -- =================
--- STAT PANEL PAGE
+-- CLASS SELECTION
 -- =================
 */
 
-.inner {
-    width: 600px;
-    margin-top: 50px;
+#class-select {
+    margin-bottom: 15px;
 }
 
-table#jewelry {
-    float: left;
+#class-select form {
+    display: flex;
+    justify-content: center;
 }
-table#armor {
-    float: right;
+
+#class-select form label {
+    margin-right: 15px;
+}
+
+#class-select [type=radio] { 
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+#class-select [type=radio] + img {
+    cursor: pointer;
+    opacity: 0.35;
+}
+
+#class-select [type=radio] + img:hover {
+    opacity: 0.65;
+}
+
+#class-select [type=radio]:checked + img {
+    opacity: 1;
+}
+
+/* 
+-- =================
+-- END
+-- CLASS SELECTION
+-- =================
+*/
+
+/* 
+-- =================
+-- IMPORT / EXPORT
+-- =================
+*/
+
+#import-export {
+    display: flex;
+    flex-direction: column;
+}
+
+#import-export > div {
+    display: flex;
+    justify-content: space-between;
+}
+
+#import-export form,
+#import-export > input {
+    margin-top: 10px;
+}
+
+#import-export form {
+    display: flex;
+}
+
+#import-export input {
+    width: auto;
+    flex-grow: 1;
+}
+
+#import-export form input {
+    margin-right: 10px;
+}
+
+/* 
+-- =================
+-- END
+-- IMPORT / EXPORT
+-- =================
+*/
+
+#main {
+    flex-direction: row;
+    margin-top: 15px;
 }
 
 tr {
@@ -22,14 +112,25 @@ tr {
     margin-bottom: 5px;
 }
 
-#jewelry .item img,
-#armor .item img {
-    width: 55px;
-    height: 55px;
-    border: 5px solid;
-    border-image-slice: 1;
-    border-width: 5px;
-    border-image-source: linear-gradient(90deg,rgba(205, 204, 206, 1) 41%, rgba(149, 149, 148, 1) 69%, rgba(102, 102, 103, 1) 100%);
+/* 
+-- =================
+-- GEAR PANEL
+-- =================
+*/
+
+#table-container {
+    width: 650px;
+    margin-right: 5px;
+}
+
+#table-container > .b1-content {
+    display: flex;
+    justify-content: space-between;
+    background-color: transparent;
+    /* vignette effect */
+    box-shadow: 0px 0px 200px 100px rgba(0,0,0,0.95) inset;
+    -webkit-box-shadow: 0px 0px 200px 100px rgba(0,0,0,0.95) inset;
+    -moz-box-shadow: 0px 0px 200px 100px rgba(0,0,0,0.95) inset;
 }
 
 .item {
@@ -38,95 +139,120 @@ tr {
 
 .item + td {
     position: absolute;
-    width: 300px;
-    background: white;
-    padding: 20px 20px 10px 20px;
-    z-index: 1;
+    z-index: 3;
 }
 
 #jewelry .item + td {
-    top: 3px;
-    left: 70px;
+    top: 1px;
+    left: 66px;
 }
 
 #armor .item + td {
-    top: 3px;
-    left: -339px;
+    top: 1px;
+    right: 70px;
 }
 
-.item + td button[type="submit"] {
-    margin-left: 30px;
-    margin-right: 40px;
+.item + td form div {
+    margin-bottom: 10px;
 }
 
 #jewelry :nth-child(n + 6 of tr) .item + td,
 #armor :nth-child(n + 6 of tr) .item + td {
     top: auto;
-    bottom: 7px;
-}
-
-
-button {
-    padding: 10px;
-    border-radius: 10px;
-}
-
-input {
-    text-align: center;
-    background-color: #ccc;
-    border: 1px solid #ccc;
-    padding: 10px 20px;
-    border-radius: 5px;
-    display: block;
-    margin-bottom: 15px;
-    width: 260px;
-}
-
-#notification {
-    color: #f26b43;
-    margin-top: 25px;
-}
-
-#stat-values {
-    margin-bottom: 25px;
-    margin-top: 25px;
-    margin-left: auto;
-    margin-right: auto;
-}
-#stat-values td:first-child {
-    min-width: 250px;
-}
-#stat-values td:nth-child(2),
-#stat-values td:nth-child(3) {
-    min-width: 150px;
+    bottom: 1px;
 }
 
 td form select {
     padding: 5px;
-    margin-bottom: 5px;
+    width: 150px;
+    margin-right: 10px;
 }
 
 td form h2 {
-    color: #0D0D0D;
     margin-top: 0px;
     margin-bottom: 10px;
 }
 
-#import-export button {
+.item + td > form {
+    width: 300px;
+}
+
+.item + td > form > div:first-child {
+    display: flex;
+    flex-direction: column;
+}
+
+.item + td > form > div:not(:first-child) {
+    display: flex;
+    flex-direction: row;
+}
+
+.item + td > form > div:last-child {
+    justify-content: space-around;
+    margin-bottom: 0px;
+    margin-top: 15px;
+}
+
+.item + td > form > div:not(:first-child) > select {
+    flex: 3;
+}
+.item + td > form > div:not(:first-child) > input {
+    min-width: 0;
+    flex: 1;
+}
+
+/* 
+-- =================
+-- END
+-- GEAR PANEL
+-- =================
+*/
+
+
+
+
+
+
+
+
+#stat-values {
+    flex-grow: 1;
+}
+
+#notification {
+    color: #f26b43;
+    margin-bottom: 0px;
+    margin-top: 15px;
+}
+
+#stat-values td:first-child {
+    min-width: 235px;
+}
+
+#stat-values tr:before {
+    color: #b7b076;
+    font-size: 16px;
+    text-transform: uppercase;
+    font-weight: bold;
     display: block;
+    padding: 0px 0px 3px 0px;
+    border-bottom: 1px solid;
     margin-bottom: 10px;
 }
-
-#import-export form * {
-    display: inline;
+#stat-values tr:not(:first-child):before {
+    margin-top: 10px;
 }
-
-#import-export #load_stored {
-    width: 480px;
+#stat-values tr:nth-child(1):before {
+    content: "Basic stats";
 }
-
-#import-export button + input {
-    width: 557px;
+#stat-values tr:nth-child(6):before {
+    content: "Offence";
+}
+#stat-values tr:nth-child(11):before {
+    content: "Defence";
+}
+#stat-values tr:nth-child(17):before {
+    content: "Regeneration";
 }
 
 /*
@@ -170,6 +296,8 @@ td form h2 {
     border-image-slice: 1;
     border-width: 5px;
     border-image-source: linear-gradient(90deg,rgba(205, 204, 206, 1) 41%, rgba(149, 149, 148, 1) 69%, rgba(102, 102, 103, 1) 100%);
+    background-color: black;
+    z-index: 2;
 }
 
 #jewelry .tooltip {
@@ -177,7 +305,7 @@ td form h2 {
 }
 
 #armor .tooltip {
-    left: -314px;
+    left: -318px;
 }
 
 .item:hover + td + td.tooltip,
@@ -185,67 +313,105 @@ td form h2 {
     visibility: visible;
 }
 
-#armor :nth-child(n + 6 of tr) .item + td + td.tooltip {
-    top: auto;
-    bottom: 6px;
-}
-
+#armor :nth-child(n + 6 of tr) .item + td + td.tooltip,
 #jewelry :nth-child(n + 6 of tr) .item + td + td.tooltip {
     top: auto;
-    bottom: 7px;
+    bottom: 3px;
+}
+
+#jewelry .item .img-container,
+#armor .item .img-container {
+    width: 58px;
+    height: 58px;
+    border-style: solid;
+    border-image-slice: 1;
+    border-width: 3px;
+    border-image-source: linear-gradient(90deg,rgba(205, 204, 206, 1) 41%, rgba(149, 149, 148, 1) 69%, rgba(102, 102, 103, 1) 100%);
+}
+
+.img-container img {
+    width: 52px;
+    height: 52px;
+}
+
+/* 
+seen at https://tobiasahlin.com/blog/previous-sibling-css-has/
+--
+this is the default state before clicking any slot
+*/
+#jewelry td.item:has(+ .noshow) .inside-img-container,
+#armor td.item:has(+ .noshow) .inside-img-container {
+    border: 3px solid black;
+}
+/* this is after clicking on a slot */
+.inside-img-container {
+    width: 52px; /* has to be the same size as .img-container img */
+    height: 52px; /* has to be the same size as .img-container img */
+    border-style: solid;
+    border-image-slice: 1;
+    border-width: 3px; /* same as .img-container */
+    border-image-source: linear-gradient(0deg,rgba(255, 235, 8, 1) 10%, rgba(149, 149, 148, 0) 69%, rgba(102, 102, 103, 0) 100%);
 }
 
 
-/* class selection list */
+/*
+-- =================
+-- RESPONSIVE
+-- =================
+*/
 
-#class-select [type=radio] { 
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-#class-select [type=radio] + img {
-  cursor: pointer;
-}
-
-#class-select [type=radio]:checked + img {
-  outline: 3px solid #A62D12;
-}
-
-#class-select label:not(:first-child) {
-    margin-left: 4px;
-}
-
-#class-select {
-    margin-bottom: 10px;
-}
-
-
-@media (max-width: 615px) {
+@media screen and (max-width: 1200px) {
     .inner {
-        width: 95%;
-    }
-    #class-select {
-        width: 95%;
-    }
-    .tooltip-content {
-        width: 13em !important;
+        width: 800px;
     }
     #stat-values td:first-child {
-        min-width: 165px;
-        max-width: 165px;
+        vertical-align: top;
+        max-width: 140px;
+        min-width: 140px;
     }
-    #stat-values td:nth-child(2), #stat-values td:nth-child(3) {
-        min-width: 130px;
-        max-width: 130px;
+    .item + td > form {
+        width: 250px;
+    }
+    .tooltip > div {
+        width: 13em !important;
     }
     #armor .tooltip {
-        left: -235px;
-    }
-    #class-select form {
-        display: flex;
-        flex-wrap: wrap;
-        place-content: center;
+        left: -234px;
     }
 }
+
+@media screen and (max-width: 820px) {
+    .inner {
+        width: 450px;
+    }
+    #main {
+        flex-direction: column;
+        gap: 10px;
+    }
+    #table-container {
+        width: auto;
+        margin-right: 0px;
+    }
+    #class-select form {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .item + td > form {
+        width: 215px;
+    }
+    td form select {
+        width: 120px;
+    }
+    #armor .item + td {
+        right: 66px;
+    }
+    #stat-values table td:nth-child(2) span:first-child {
+        margin-left: 100px;
+    }
+}
+/*
+-- =================
+-- END
+-- RESPONSIVE
+-- =================
+*/
