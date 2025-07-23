@@ -39,17 +39,17 @@ cipu = {}
 def session_handler(session):
     if 'user' not in session:
         session['user'] = str(uuid4().hex)
-        cipu[session['user']] = {
-            'curr_stats' : Character_Sheet(),
-            'old_stats' : Character_Sheet()
-        }
-    elif (cipu == {}): # to handle gracefully the case when e.g. the service is restarted while a user is working
-        cipu[session['user']] = {
-            'curr_stats' : Character_Sheet(),
-            'old_stats' : Character_Sheet()
-        }
 
-    return cipu[session['user']]
+    try:
+        curr_sess = cipu[session['user']]
+    except:
+        curr_sess = {
+            'curr_stats' : Character_Sheet(),
+            'old_stats' : Character_Sheet()
+        }
+        cipu[session['user']] = curr_sess
+    
+    return curr_sess
 
 # enable caching for static files
 # seen at https://stackoverflow.com/questions/77569410/flask-possible-to-cache-images
