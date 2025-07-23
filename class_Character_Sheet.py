@@ -74,6 +74,13 @@ class Character_Sheet:
                            'Champion', 'Guardian', 'Hunter', 'Lore-master',
                            'Mariner', 'Minstrel', 'Rune-keeper', 'Warden'
                           ]
+        
+        # this list comes from Stat_Table().listAllStats() but the app is very slow if we pass the class here
+        self.__allStatsList = ['Might', 'Agility', 'Vitality', 'Will', 'Fate', 'Critical Rating', 'Finesse Rating',
+                               'Physical Mastery Rating', 'Tactical Mastery Rating', 'Outgoing Healing Rating',
+                               'Resistance Rating', 'Block Rating', 'Parry Rating', 'Evade Rating','Physical Mitigation',
+                               'Tactical Mitigation', 'Maximum Morale', 'In-Combat Morale Regeneration',
+                               'Non-Combat Morale Regeneration', 'Maximum Power', 'In-Combat Power Regeneration', 'Non-Combat Power Regeneration']
 
     def validateSlotUpdate(self, slot, slotData = None, essences = None):
         
@@ -178,10 +185,12 @@ class Character_Sheet:
 
             for attrib in slotData['item']['attrib']:
 
-                stat_name = re.search(r'[a-zA-Z\s]+', attrib).group().strip()
-                stat_value = int(re.search(r'[\d+,?\d+]+', attrib).group().replace(',', ''))
-
-                self.itemSlots[slot]['item-info'][stat_name] = stat_value
+                try:
+                    stat_name = [word for word in self.__allStatsList if word in attrib][0]
+                    stat_value = int(re.search(r'[\d+,?\d+]+', attrib).group().replace(',', ''))
+                    self.itemSlots[slot]['item-info'][stat_name] = stat_value
+                except:
+                    pass
 
             # if from the Wiki we load an item with essences,
             # create the proper structure
