@@ -79,7 +79,7 @@
             {% with the_gear = char_sheet.itemSlots %}
                 {% set gear_copy = the_gear.copy() %}
                 {% set cl_name = {'class': char_sheet.class_name} %}
-                <input type="text" value="{{dict(gear_copy, **cl_name) | encode_gear_config}}" class="noshow">
+                <input type="text" value="{{dict(gear_copy, **cl_name) | encode_gear_config}}" class="noshow" onclick = "this.select()">
             {% endwith %}
         </div>
         {% with messages = get_flashed_messages(with_categories=true) %}
