@@ -54,7 +54,7 @@ def session_handler(session):
 # enable caching for static files
 # seen at https://stackoverflow.com/questions/77569410/flask-possible-to-cache-images
 @app.route('/static/<path:filename>')
-def static(filename):
+def lcsp_cache_static(filename):
     resp = make_response(send_from_directory('static/', filename))
     resp.headers['Cache-Control'] = 'max-age'
     return resp
