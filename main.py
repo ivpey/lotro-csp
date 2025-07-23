@@ -1,7 +1,7 @@
 # ====================
 # import packages
 # ====================
-from flask import Flask, render_template, request, flash, redirect, url_for, session
+from flask import Flask, render_template, request, flash, redirect, url_for, session, make_response, send_from_directory
 import requests
 import requests_cache
 import urllib
@@ -50,6 +50,14 @@ def session_handler(session):
         }
 
     return cipu[session['user']]
+
+# enable caching for static files
+# seen at https://stackoverflow.com/questions/77569410/flask-possible-to-cache-images
+@app.route('/static/<path:filename>')
+def static(filename):
+    resp = make_response(send_from_directory('static/', filename))
+    resp.headers['Cache-Control'] = 'max-age'
+    return resp
 
 @app.template_filter()
 def format_url_unquote(val, isItemName = False):
