@@ -8,39 +8,36 @@
         <script>
             url_search = new URLSearchParams(window.location.search)
             ls = localStorage.getItem('gear-config');
-            if (ls == null) {
+            if (ls == null || url_search.has('hc') || url_search.has('item')) {
                 localStorage.setItem('gear-config', '{{dict(gear_copy, **cl_name) | encode_gear_config}}');
             }
             else {
-                if (!url_search.has('hc') && !url_search.has('item')) {
-                    const formData = new URLSearchParams();
-                    formData.append('load_stored', ls);
+                const formData = new URLSearchParams();
+                formData.append('load_stored', ls);
 
-                    fetch("{{ url_for('handle_choices') }}", {
-                        method : 'POST',
-                        headers: {
-                            'Content-Type' : 'application/x-www-form-urlencoded'
-                        },
-                        body: formData.toString()
-                    }).then(
-                        response => {
-                            if (response.redirected) {
-                                window.location = response.url
-                            }
+                fetch("{{ url_for('handle_choices') }}", {
+                    method : 'POST',
+                    headers: {
+                        'Content-Type' : 'application/x-www-form-urlencoded'
+                    },
+                    body: formData.toString()
+                }).then(
+                    response => {
+                        if (response.redirected) {
+                            window.location = response.url
                         }
-                    )
-                } else {
-                    localStorage.setItem('gear-config', '{{dict(gear_copy, **cl_name) | encode_gear_config}}');
-                }
+                    }
+                )
             }
         </script>
     {% endwith %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='common.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='stat-panel.css') }}">
     <title>LOTRO Character Stats Panel</title>
 </head>
 <body>
-    <h1>LOTRO Character Stat Panel</h1>
+    <a href="{{ url_for('stats_panel_page') }}">
+        <h1>LOTRO Character Stat Panel</h1>
+    </a>
     <div class="inner">
         <div id="class-select" class="b1-parent-container">
             <div class="b1-tl"></div>
@@ -64,17 +61,18 @@
             <div class="b1-bm"></div>
             <div class="b1-br"></div>
         </div>
-        <div id="import-export">
+        <div id="import-export" class="b1-parent-container">
             <div>
                 <button onclick="this.parentElement.nextElementSibling.classList.toggle('noshow'); this.parentElement.nextElementSibling.nextElementSibling.classList.add('noshow')">Import</button>
+                <form action = {{ url_for('handle_choices') }} method="POST" id="clear-gear">
+                    <button type="submit">Clear</button>
+                </form>
                 <button onclick="this.parentElement.nextElementSibling.classList.add('noshow'); this.parentElement.nextElementSibling.nextElementSibling.classList.toggle('noshow')">Export</button>
             </div>
             <form action = {{ url_for('handle_choices') }} method="POST" class="noshow">
                 <!-- It is important that we do this as a form submission so the redirect can work -->
                 <input type="text" id="load_stored" name="load_stored">
-                <button type="submit" id="load">
-                    Import
-                </button>
+                <button type="submit" id="load">Import</button>
             </form>
             {% with the_gear = char_sheet.itemSlots %}
                 {% set gear_copy = the_gear.copy() %}
@@ -99,134 +97,202 @@
             <div class="b1-tr"></div>
             <div class="b1-l"></div>
             <div class="b1-content">
-                <table id="jewelry">
-                    {% for item_slot in char_sheet.itemSlots.items() %}
-                        {% if item_slot[1]['slot-type'] == 'jewelry' %}
-                        <tr>
-                            <td class="item" onclick="this.nextElementSibling.classList.toggle('noshow')">
-                                <div class="img-container">
-                                    <div class="inside-img-container">
-                                        <img
-                                            {% if item_slot[1]['item-info']['icon-url'] %}                  
-                                                src="{{item_slot[1]['item-info']['icon-url']}}"
-                                            {% else %}
-                                                src="{{ url_for('static', filename = item_slot[0] + '.png') }}"
-                                            {% endif %}
-                                        >
+                <div>
+                    <table id="jewelry">
+                        {% for item_slot in char_sheet.itemSlots.items() %}
+                            {% if item_slot[1]['slot-type'] == 'jewelry' %}
+                            <tr>
+                                <td class="item" onclick="this.nextElementSibling.classList.toggle('noshow')">
+                                    <div class="img-container">
+                                        <div class="inside-img-container">
+                                            <img
+                                                {% if item_slot[1]['item-info']['icon-url'] %}                  
+                                                    src="{{item_slot[1]['item-info']['icon-url']}}"
+                                                {% else %}
+                                                    src="{{ url_for('static', filename = item_slot[0] + '.png') }}"
+                                                {% endif %}
+                                            >
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                            <td class="noshow b1-parent-container">
-                                <div class="b1-tl"></div>
-                                <div class="b1-tm"></div>
-                                <div class="b1-tr"></div>
-                                <div class="b1-l"></div>
-                                <form class="b1-content" method="POST" action= {{ url_for('load_items', item = item_slot[0]) }}>
-                                    <div>
-                                        <h2>Item name:</h2>
-                                        <input
-                                            name= "{{item_slot[0]}}"
-                                            type="text"
-                                            {% if item_slot[1]['item-info']['name'] %} value="{{ item_slot[1]['item-info']['name'] | format_url_unquote(True) }}" {% endif %}
-                                        >
-                                    </div>
-                                    {% if item_slot[1]['item-info']['essences'] %}
-                                        <h2>Essence slots:</h2>
-                                        {% for essence in item_slot[1]['item-info']['essences'] %}
-                                            <div>
-                                                <select name="essence_{{essence}}_stat">
-                                                    <option value="0" {% if item_slot[1]['item-info']['essences'][essence]|length == 0 %} selected {% endif %} disabled>Essence {{ loop.index }}...</option>
-                                                    {% for stat in stat_sheet.listAllStats() %}
-                                                    <option value="{{stat}}" {{ 'selected' if stat in item_slot[1]['item-info']['essences'][essence] }}>{{stat}}</option>
-                                                    {% endfor %}
-                                                </select>
-                                                <input type="number" name="essence_{{essence}}_value" value="{{ 0 if item_slot[1]['item-info']['essences'][essence].values()|length == 0 else item_slot[1]['item-info']['essences'][essence].values()|list|join }}">
-                                            </div>
-                                        {% endfor %}
-                                    {% endif %}
-                                    <div>
-                                        <button type="submit">Update</button>
-                                        <button onclick="document.getElementsByName('{{item_slot[0]}}')[0].value = ''; this.parentElement.submit()">Remove item</button>
-                                    </div>
-                                </form>
-                                <div class="b1-r"></div>
-                                <div class="b1-bl"></div>
-                                <div class="b1-bm"></div>
-                                <div class="b1-br"></div>
-                            </td>
-                            {% if item_slot[1]['item-info']['name'] %}
-                            <td class="tooltip">
-                                {{ item_slot[1]['item-info']['name'] | format_url_unquote | item_tooltip | safe }}
-                            </td>
+                                </td>
+                                <td class="noshow b1-parent-container">
+                                    <div class="b1-tl"></div>
+                                    <div class="b1-tm"></div>
+                                    <div class="b1-tr"></div>
+                                    <div class="b1-l"></div>
+                                    <form class="b1-content" method="POST" action= {{ url_for('load_items', item = item_slot[0]) }}>
+                                        <div>
+                                            <h2>Item name:</h2>
+                                            <input
+                                                name= "{{item_slot[0]}}"
+                                                type="text"
+                                                {% if item_slot[1]['item-info']['name'] %} value="{{ item_slot[1]['item-info']['name'] | format_url_unquote(True) }}" {% endif %}
+                                            >
+                                        </div>
+                                        {% if item_slot[1]['item-info']['essences'] %}
+                                            <h2>Essence slots:</h2>
+                                            {% for essence in item_slot[1]['item-info']['essences'] %}
+                                                <div>
+                                                    <select name="essence_{{essence}}_stat">
+                                                        <option value="0" {% if item_slot[1]['item-info']['essences'][essence]|length == 0 %} selected {% endif %} disabled>Essence {{ loop.index }}...</option>
+                                                        {% for stat in stat_sheet.listAllStats() %}
+                                                        <option value="{{stat}}" {{ 'selected' if stat in item_slot[1]['item-info']['essences'][essence] }}>{{stat}}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                    <input type="number" name="essence_{{essence}}_value" value="{{ 0 if item_slot[1]['item-info']['essences'][essence].values()|length == 0 else item_slot[1]['item-info']['essences'][essence].values()|list|join }}">
+                                                </div>
+                                            {% endfor %}
+                                        {% endif %}
+                                        <div>
+                                            <button type="submit">Update</button>
+                                            <button onclick="document.getElementsByName('{{item_slot[0]}}')[0].value = ''; this.parentElement.submit()">Remove item</button>
+                                        </div>
+                                    </form>
+                                    <div class="b1-r"></div>
+                                    <div class="b1-bl"></div>
+                                    <div class="b1-bm"></div>
+                                    <div class="b1-br"></div>
+                                </td>
+                                {% if item_slot[1]['item-info']['name'] %}
+                                <td class="tooltip">
+                                    {{ item_slot[1]['item-info']['name'] | format_url_unquote | item_tooltip | safe }}
+                                </td>
+                                {% endif %}
+                            </tr>
                             {% endif %}
-                        </tr>
-                        {% endif %}
-                    {% endfor %}
-                </table>
-                <table id="armor">
-                    {% for item_slot in char_sheet.itemSlots.items() %}
-                        {% if item_slot[1]['slot-type'] == 'armor' %}
-                        <tr>
-                            <td class="item" onclick="this.nextElementSibling.classList.toggle('noshow')">
-                                <div class="img-container">
-                                    <div class="inside-img-container">
-                                        <img
-                                            {% if item_slot[1]['item-info']['icon-url'] %}                  
-                                                src="{{item_slot[1]['item-info']['icon-url']}}"
-                                            {% else %}
-                                                src="{{ url_for('static', filename = item_slot[0] + '.png') }}"
-                                            {% endif %}
-                                        >
+                        {% endfor %}
+                    </table>
+                    <table id="armor">
+                        {% for item_slot in char_sheet.itemSlots.items() %}
+                            {% if item_slot[1]['slot-type'] == 'armor' %}
+                            <tr>
+                                <td class="item" onclick="this.nextElementSibling.classList.toggle('noshow')">
+                                    <div class="img-container">
+                                        <div class="inside-img-container">
+                                            <img
+                                                {% if item_slot[1]['item-info']['icon-url'] %}                  
+                                                    src="{{item_slot[1]['item-info']['icon-url']}}"
+                                                {% else %}
+                                                    src="{{ url_for('static', filename = item_slot[0] + '.png') }}"
+                                                {% endif %}
+                                            >
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                            <td class="noshow b1-parent-container">
-                                <div class="b1-tl"></div>
-                                <div class="b1-tm"></div>
-                                <div class="b1-tr"></div>
-                                <div class="b1-l"></div>
-                                <form class="b1-content" method="POST" action= {{ url_for('load_items', item = item_slot[0]) }}>
-                                    <div>
-                                        <h2>Item name:</h2>
-                                        <input
-                                            name= "{{item_slot[0]}}"
-                                            type="text"
-                                            {% if item_slot[1]['item-info']['name'] %} value="{{ item_slot[1]['item-info']['name'] | format_url_unquote(True) }}" {% endif %}
-                                        >
-                                    </div>
-                                    {% if item_slot[1]['item-info']['essences'] %}
-                                        <h2>Essence slots:</h2>
-                                        {% for essence in item_slot[1]['item-info']['essences'] %}
-                                            <div>
-                                                <select name="essence_{{essence}}_stat">
-                                                    <option value="" {% if item_slot[1]['item-info']['essences'][essence]|length == 0 %} selected {% endif %} disabled>Essence {{ loop.index }}...</option>
-                                                    {% for stat in stat_sheet.listAllStats() %}
-                                                    <option value="{{stat}}" {{ 'selected' if stat in item_slot[1]['item-info']['essences'][essence] }}>{{stat}}</option>
-                                                    {% endfor %}
-                                                </select>
-                                                <input type="number" name="essence_{{essence}}_value" value="{{ 0 if item_slot[1]['item-info']['essences'][essence].values()|length == 0 else item_slot[1]['item-info']['essences'][essence].values()|list|join }}">
-                                            </div>
-                                        {% endfor %}
-                                    {% endif %}
-                                    <div>
-                                        <button type="submit">Update</button>
-                                        <button onclick="document.getElementsByName('{{item_slot[0]}}')[0].value = ''; this.parentElement.submit()">Remove item</button>
-                                    </div>
-                                </form>
-                                <div class="b1-r"></div>
-                                <div class="b1-bl"></div>
-                                <div class="b1-bm"></div>
-                                <div class="b1-br"></div>
-                            </td>
-                            {% if item_slot[1]['item-info']['name'] %}
-                            <td class="tooltip">
-                                {{ item_slot[1]['item-info']['name'] | format_url_unquote | item_tooltip | safe }}
-                            </td>
+                                </td>
+                                <td class="noshow b1-parent-container">
+                                    <div class="b1-tl"></div>
+                                    <div class="b1-tm"></div>
+                                    <div class="b1-tr"></div>
+                                    <div class="b1-l"></div>
+                                    <form class="b1-content" method="POST" action= {{ url_for('load_items', item = item_slot[0]) }}>
+                                        <div>
+                                            <h2>Item name:</h2>
+                                            <input
+                                                name= "{{item_slot[0]}}"
+                                                type="text"
+                                                {% if item_slot[1]['item-info']['name'] %} value="{{ item_slot[1]['item-info']['name'] | format_url_unquote(True) }}" {% endif %}
+                                            >
+                                        </div>
+                                        {% if item_slot[1]['item-info']['essences'] %}
+                                            <h2>Essence slots:</h2>
+                                            {% for essence in item_slot[1]['item-info']['essences'] %}
+                                                <div>
+                                                    <select name="essence_{{essence}}_stat">
+                                                        <option value="" {% if item_slot[1]['item-info']['essences'][essence]|length == 0 %} selected {% endif %} disabled>Essence {{ loop.index }}...</option>
+                                                        {% for stat in stat_sheet.listAllStats() %}
+                                                        <option value="{{stat}}" {{ 'selected' if stat in item_slot[1]['item-info']['essences'][essence] }}>{{stat}}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                    <input type="number" name="essence_{{essence}}_value" value="{{ 0 if item_slot[1]['item-info']['essences'][essence].values()|length == 0 else item_slot[1]['item-info']['essences'][essence].values()|list|join }}">
+                                                </div>
+                                            {% endfor %}
+                                        {% endif %}
+                                        <div>
+                                            <button type="submit">Update</button>
+                                            <button onclick="document.getElementsByName('{{item_slot[0]}}')[0].value = ''; this.parentElement.submit()">Remove item</button>
+                                        </div>
+                                    </form>
+                                    <div class="b1-r"></div>
+                                    <div class="b1-bl"></div>
+                                    <div class="b1-bm"></div>
+                                    <div class="b1-br"></div>
+                                </td>
+                                {% if item_slot[1]['item-info']['name'] %}
+                                <td class="tooltip">
+                                    {{ item_slot[1]['item-info']['name'] | format_url_unquote | item_tooltip | safe }}
+                                </td>
+                                {% endif %}
+                            </tr>
                             {% endif %}
-                        </tr>
-                        {% endif %}
-                    {% endfor %}
-                </table>
+                        {% endfor %}
+                    </table>
+                </div>
+                <div>
+                    <table id="weapons">
+                        {% for item_slot in char_sheet.itemSlots.items() %}
+                            {% if item_slot[1]['slot-type'] == 'weapon' %}
+                            <tr>
+                                <td class="item" onclick="this.nextElementSibling.classList.toggle('noshow')">
+                                    <div class="img-container">
+                                        <div class="inside-img-container">
+                                            <img
+                                                {% if item_slot[1]['item-info']['icon-url'] %}                  
+                                                    src="{{item_slot[1]['item-info']['icon-url']}}"
+                                                {% else %}
+                                                    src="{{ url_for('static', filename = item_slot[0] + '.png') }}"
+                                                {% endif %}
+                                            >
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="noshow b1-parent-container">
+                                    <div class="b1-tl"></div>
+                                    <div class="b1-tm"></div>
+                                    <div class="b1-tr"></div>
+                                    <div class="b1-l"></div>
+                                    <form class="b1-content" method="POST" action= {{ url_for('load_items', item = item_slot[0]) }}>
+                                        <div>
+                                            <h2>Item name:</h2>
+                                            <input
+                                                name= "{{item_slot[0]}}"
+                                                type="text"
+                                                {% if item_slot[1]['item-info']['name'] %} value="{{ item_slot[1]['item-info']['name'] | format_url_unquote(True) }}" {% endif %}
+                                            >
+                                        </div>
+                                        {% if item_slot[1]['item-info']['essences'] %}
+                                            <h2>Essence slots:</h2>
+                                            {% for essence in item_slot[1]['item-info']['essences'] %}
+                                                <div>
+                                                    <select name="essence_{{essence}}_stat">
+                                                        <option value="" {% if item_slot[1]['item-info']['essences'][essence]|length == 0 %} selected {% endif %} disabled>Essence {{ loop.index }}...</option>
+                                                        {% for stat in stat_sheet.listAllStats() %}
+                                                        <option value="{{stat}}" {{ 'selected' if stat in item_slot[1]['item-info']['essences'][essence] }}>{{stat}}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                    <input type="number" name="essence_{{essence}}_value" value="{{ 0 if item_slot[1]['item-info']['essences'][essence].values()|length == 0 else item_slot[1]['item-info']['essences'][essence].values()|list|join }}">
+                                                </div>
+                                            {% endfor %}
+                                        {% endif %}
+                                        <div>
+                                            <button type="submit">Update</button>
+                                            <button onclick="document.getElementsByName('{{item_slot[0]}}')[0].value = ''; this.parentElement.submit()">Remove item</button>
+                                        </div>
+                                    </form>
+                                    <div class="b1-r"></div>
+                                    <div class="b1-bl"></div>
+                                    <div class="b1-bm"></div>
+                                    <div class="b1-br"></div>
+                                </td>
+                                {% if item_slot[1]['item-info']['name'] %}
+                                <td class="tooltip">
+                                    {{ item_slot[1]['item-info']['name'] | format_url_unquote | item_tooltip | safe }}
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </table>
+                </div>
             </div>
             <div class="b1-r"></div>
             <div class="b1-bl"></div>
@@ -239,15 +305,10 @@
             <div class="b1-tr"></div>
             <div class="b1-l"></div>
             <table class="b1-content">
-                    <!-- <tr id="header-row">
-                        <td>Stat</td>
-                        <td>Current loadout</td> -->
-                        <!-- <td>Previous loadout</td> -->
-                    <!-- </tr> -->
                 {% for stat in stat_sheet.listAllStats() %}
                     {% set curr = char_sheet.getTotalStat(stat, stat_sheet) %}
                     {% set prev = old_stats.getTotalStat(stat, stat_sheet) %}
-                    {% set diff = curr - prev %}
+                    {% set diff = 0 if (prev == 0 or curr == 0 or old_stats.class_name != char_sheet.class_name) else curr - prev %}
                     {% set color = ['', 'green', 'red'][0 if diff == 0 else (diff/(diff|abs))|int] %}
                     <tr>
                         <td>
@@ -257,9 +318,11 @@
                             <span>
                                 {{ '{:0,.2f}'.format(curr) }}
                             </span>
+                            {% if diff != 0 %}
                             <span class="{{ color }}">
                                 ({{ '{:0,.2f}'.format(diff) }})
                             </span>
+                            {% endif %}
                         </td>
                     </tr>
                 {% endfor %}
