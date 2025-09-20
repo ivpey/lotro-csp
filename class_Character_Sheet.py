@@ -65,6 +65,10 @@ class Character_Sheet:
             'pocket': {
                 'slot-type': 'jewelry',
                 'item-info': {}
+            },
+            'off-hand': {
+                'slot-type': 'weapon',
+                'item-info': {}
             }
         }
 
@@ -83,89 +87,88 @@ class Character_Sheet:
                                'Non-Combat Morale Regeneration', 'Maximum Power', 'In-Combat Power Regeneration', 'Non-Combat Power Regeneration']
 
     def validateSlotUpdate(self, slot, slotData = None, essences = None):
-        
-        # pre-load the message for success
+
+        # pre-set the message for success
         notification_msg = f'Updated {slot.upper()} slot.'
 
-        if (slot in [x for x in self.itemSlots]):
-
-            if (slotData is not None and slotData != {}):
-
-                if ((slotData['item']['slot'] is not None) & (slotData['item']['type'] is not None)):
-                    
-                    if (
-                        slot == slotData['item']['slot']                            # armor typically has both SLOT and TYPE
-                        or
-                        ((slotData['item']['slot'] == 'cloak') & (slot == 'back'))  # certain cloaks have SLOT=CLOAK instead of SLOT=BACK
-                        or
-                        slotData['item']['slot'] == slot.split('-')[0]              # jewelry typically only has TYPE, but found some rings which have both SLOT and TYPE
-                    ):
-
-                        if (slotData['item']['scaled'] is not None):
-                            notification_msg = f'Exact stat values cannot be determined for scaled item in slot {slot.upper()}. It will not contribute to stat calculations.'
-
-                        self.__updateSlot(slot, slotData, essences)
-
-                    else:
-
-                        notification_msg = f'Trying to enter {slotData['item']['slot'].upper()} item into {slot.upper()} slot.'
-
-                elif ((slotData['item']['slot'] is None) & (slotData['item']['type'] is not None)):
-
-                    # armor without SLOT
-                    if (
-                        re.search('[a-zA-Z]+', slotData['item']['type']).group() in ['light', 'medium', 'heavy']
-                        and
-                        slot in ['head', 'shoulder', 'back', 'chest', 'gloves', 'legs', 'feet']
-                    ):
-                        
-                        if (slotData['item']['scaled'] is not None):
-                            notification_msg = f'Exact stat values cannot be determined for scaled item in slot {slot.upper()}. It will not contribute to stat calculations.'
-
-                        self.__updateSlot(slot, slotData, essences)
-                        notification_msg = f'The item slot could not be verified in the Wiki. Updated {slot.upper()} slot.'
-
-                    # jewelry
-                    else:
-
-                        if (slotData['item']['type'] == slot.split('-')[0]):
-
-                            if (slotData['item']['scaled'] is not None):
-                                notification_msg = f'Exact stat values cannot be determined for scaled item in slot {slot.upper()}. It will not contribute to stat calculations.'
-
-                            self.__updateSlot(slot, slotData, essences)
-
-                        else:
-
-                            notification_msg = f'Trying to enter {slotData['item']['type'].upper()} item into {slot.upper()} slot.'
-
-                elif ((slotData['item']['slot'] is not None) & (slotData['item']['type'] is None)):
-
-                    if (
-                        slot == slotData['item']['slot']                # pocket item
-                        or
-                        slotData['item']['slot'] == slot.split('-')[0]  # found some earring which has SLOT but not TYPE
-                    ):
-
-                        if (slotData['item']['scaled'] is not None):
-                            notification_msg = f'Exact stat values cannot be determined for scaled item in slot {slot.upper()}. It will not contribute to stat calculations.'
-
-                        self.__updateSlot(slot, slotData, essences)
-
-                    else:
-
-                        notification_msg = f'Trying to enter {slotData['item']['slot'].upper()} item into {slot.upper()} slot.'
-
-                else:
-
-                    notification_msg = 'Unknown error.'
-
-            else:
-
-                self.__updateSlot(slot, slotData, essences)
-
+        # something is trying to mess up with the slots
+        if (slot not in [x for x in self.itemSlots]):
+            notification_msg = f'Invalid slot.'
             return notification_msg
         
+        # we are updating essences or deleting an item
+        if (slotData is None or slotData == {}):
+            self.__updateSlot(slot, slotData, essences)
+            return notification_msg
+        
+        # here we already know that slotData is a valid dictionary and we can retrieve those keys
+        s = slotData['item']['slot']
+        t = slotData['item']['type']
+
+        # handling only the fail cases
+        match(bool(s), bool(t)):
+            
+            # has slot, has type;
+            # valid armor and cloaks
+            # weapons, too! slot shows if it is main-hand, type shows what kind of weapon it is
+            case (True, True):
+                
+                if (
+                    slot != s                                      # armor typically has both SLOT and TYPE
+                    and not ((s == 'cloak') and (slot == 'back'))  # certain cloaks have SLOT=CLOAK instead of SLOT=BACK
+                    and s != slot.split('-')[0]                    # jewelry typically only has TYPE, but found some rings which have both SLOT and TYPE
+                ):
+                    notification_msg = f'Trying to enter {s.upper()} item into {slot.upper()} slot.'
+                    return notification_msg
+
+            # has no slot, has type
+            case (False, True):
+
+                armor_cond = re.search('[a-zA-Z]+', t).group() in ['light', 'medium', 'heavy'] and slot in ['head', 'shoulder', 'back', 'chest', 'gloves', 'legs', 'feet']
+                shield_cond = 'shield' in t.lower()
+                # one-handed weapons which can go in the off-hand have a type instead of a slot;
+                # while specifically main-hand weapons have slot = main-hand
+                weapon_cond = slotData['item']['isWeapon'] and t in map(str.lower, ['One-handed Axe', 'One-handed Club', 'Dagger', 'One-handed Hammer', 'One-handed Mace', 'Spear', 'One-handed Sword'])
+                
+                if (
+                    (
+                        not armor_cond
+                        and not shield_cond
+                        and not weapon_cond
+                        and t != slot.split('-')[0] # jewelry
+                    )
+                ):
+                    notification_msg = f'Trying to enter {t.upper()} item into {slot.upper()} slot.'
+                    return notification_msg
+
+                if (armor_cond):
+                    notification_msg = f'The item slot could not be verified in the Wiki. Updated {slot.upper()} slot.'
+
+            # has slot, has no type
+            case (True, False):
+
+                if (
+                    not (
+                        slot == s                # pocket item
+                        or
+                        s == slot.split('-')[0]  # found some earring which has SLOT but not TYPE
+                    )
+                ):
+                    notification_msg = f'Trying to enter {s.upper()} item into {slot.upper()} slot.'
+                    return notification_msg
+
+            # has no slot, has no type
+            case (False, False):
+                notification_msg = 'Unknown error.'
+                return notification_msg
+        
+        if (slotData['item']['isScaled']):
+            notification_msg += ' Exact stat values cannot be determined for scaled item, and it will not contribute to stat calculations.'
+        
+        self.__updateSlot(slot, slotData, essences)
+        return notification_msg
+
+
     def __updateSlot(self, slot, slotData, essences):
         
         # deleting an item
@@ -186,9 +189,12 @@ class Character_Sheet:
             for attrib in slotData['item']['attrib']:
 
                 try:
-                    stat_name = [word for word in self.__allStatsList if word in attrib][0]
-                    stat_value = int(re.search(r'[\d+,?\d+]+', attrib).group().replace(',', ''))
-                    self.itemSlots[slot]['item-info'][stat_name] = stat_value
+                    # we want to completely ignore scalable items as there is no clear formula to transform level into final stats,
+                    # plus the regex here grabs only the lower-end value
+                    if (not bool(slotData['item']['isScaled'])):
+                        stat_name = [word for word in self.__allStatsList if word in attrib][0]
+                        stat_value = int(re.search(r'[\d+,?\d+]+', attrib).group().replace(',', ''))
+                        self.itemSlots[slot]['item-info'][stat_name] = stat_value
                 except:
                     pass
 
