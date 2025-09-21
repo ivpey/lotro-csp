@@ -308,7 +308,7 @@
                 {% for stat in stat_sheet.listAllStats() %}
                     {% set curr = char_sheet.getTotalStat(stat, stat_sheet) %}
                     {% set prev = old_stats.getTotalStat(stat, stat_sheet) %}
-                    {% set diff = 0 if (prev == 0 or curr == 0 or old_stats.class_name != char_sheet.class_name) else curr - prev %}
+                    {% set diff = 0 if old_stats.class_name != char_sheet.class_name else curr - prev %}
                     {% set color = ['', 'green', 'red'][0 if diff == 0 else (diff/(diff|abs))|int] %}
                     <tr>
                         <td>
