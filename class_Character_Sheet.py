@@ -1,4 +1,3 @@
-import re
 from class_StatTable import Stat_Table
 
 class Character_Sheet:
@@ -78,13 +77,6 @@ class Character_Sheet:
                            'Champion', 'Guardian', 'Hunter', 'Lore-master',
                            'Mariner', 'Minstrel', 'Rune-keeper', 'Warden'
                           ]
-        
-        # this list comes from Stat_Table().listAllStats() but the app is very slow if we pass the class here
-        self.__allStatsList = ['Might', 'Agility', 'Vitality', 'Will', 'Fate', 'Critical Rating', 'Finesse Rating',
-                               'Physical Mastery Rating', 'Tactical Mastery Rating', 'Outgoing Healing Rating',
-                               'Resistance Rating', 'Block Rating', 'Parry Rating', 'Evade Rating','Physical Mitigation',
-                               'Tactical Mitigation', 'Maximum Morale', 'In-Combat Morale Regeneration',
-                               'Non-Combat Morale Regeneration', 'Maximum Power', 'In-Combat Power Regeneration', 'Non-Combat Power Regeneration']
 
     def validateSlotUpdate(self, slot, slotData = None, essences = None):
 
@@ -124,7 +116,7 @@ class Character_Sheet:
             # has no slot, has type
             case (False, True):
 
-                armor_cond = re.search('[a-zA-Z]+', t).group() in ['light', 'medium', 'heavy'] and slot in ['head', 'shoulder', 'back', 'chest', 'gloves', 'legs', 'feet']
+                armor_cond = t in ['light armour', 'medium armour', 'heavy armour'] and slot in ['head', 'shoulder', 'back', 'chest', 'gloves', 'legs', 'feet']
                 shield_cond = 'shield' in t.lower()
                 # one-handed weapons which can go in the off-hand have a type instead of a slot;
                 # while specifically main-hand weapons have slot = main-hand
@@ -186,14 +178,10 @@ class Character_Sheet:
             self.itemSlots[slot]['item-info']['name'] = slotData['item']['name']
             self.itemSlots[slot]['item-info']['icon-url'] = slotData['icon']['URL']
 
-            for attrib in slotData['item']['attrib']:
-
+            for stat_name, stat_value in slotData['item']['attrib'].items():
                 try:
-                    # we want to completely ignore scalable items as there is no clear formula to transform level into final stats,
-                    # plus the regex here grabs only the lower-end value
+                    # we want to completely ignore scalable items as there is no clear formula to transform level into final stats
                     if (not bool(slotData['item']['isScaled'])):
-                        stat_name = [word for word in self.__allStatsList if word in attrib][0]
-                        stat_value = int(re.search(r'[\d+,?\d+]+', attrib).group().replace(',', ''))
                         self.itemSlots[slot]['item-info'][stat_name] = stat_value
                 except:
                     pass

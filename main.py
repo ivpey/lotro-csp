@@ -150,7 +150,7 @@ def load_items():
         flash(s['curr_stats'].validateSlotUpdate(item_slot, {}, None), item_slot)
     else:
         try:
-            existingItemName = s['curr_stats'].itemSlots[item_slot]['item-info']['name']
+            existingItemName = s['curr_stats'].itemSlots[item_slot]['item-info'].get('name', None)
             newItemName = urllib.parse.quote_plus(item_name).replace('+', '_')
             
             # same item -> we make no request, only handle essences if applicable
