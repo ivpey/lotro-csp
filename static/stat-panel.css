@@ -5,11 +5,126 @@
 
 /* 
 -- =================
+-- LOADING ANIMATION
+-- =================
+*/
+
+/* 
+-- logic taken from
+-- https://www.devtwins.com/blog/css-cross-fading-images
+--
+-- there is a GIMP project file loading_icon.xcf which contains the source for the animation split by layers;
+-- the base image is mce.png found in the main game folder where LotroLauncher.exe is;
+-- 
+-- in GIMP:
+--
+-- the inscription was extracted with Select by Color Tool making sure to Shift+Click all the parts of the inscription,
+-- then deleting anything not needed on the layer; the brighter version via Colors -> Hue-Chroma... -> Lightness with Blending Mode = Soft Light;
+--
+-- the eye was simply 2x Ellipse Select Tool;
+--
+-- the orange color was sampled from a screenshot of the in-game loading screen, then used to fill an entire layer above the eye and setting Blending Mode = Linear Light
+*/
+
+html body > a,
+html body > .inner {
+    visibility: visible;
+    opacity: 1;
+}
+
+html.loading body > a,
+html.loading body > .inner {
+    visibility: hidden;
+    opacity: 0;
+}
+
+html.loading body {
+    background-image: none;
+}
+
+html:not(.loading) #overlay-loading {
+    display: none;
+    visibility: 0;
+    z-index: 0;
+}
+
+#overlay-loading {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 5;
+}
+#overlay-loading p {
+    z-index: 10;
+    background: rgb(0, 4, 34);
+    padding: 10px 35px;
+}
+.loader {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    -webkit-animation: fade 3s infinite ease-in-out;
+    animation: fade 3s infinite ease-in-out;
+}
+/*
+-- the calculations from https://www.devtwins.com/blog/css-cross-fading-images were made with duration of img = 0.25s
+-- and duration of fade = 0.5s;
+-- in theory the animation delay should be 0.75s everywhere but this way felt robotic, so overlapping fade-ins and -outs
+-- was the only solution, the final values for state-3 and state-4 came from trial and error
+*/
+.loader#state-1 { /* base */
+    background-image: url('loading_icon_state1.png');
+    animation-delay: 0s;
+}
+.loader#state-2 { /* orange */
+    background-image: url('loading_icon_state2.png');
+    animation-delay: 0.75s;
+}
+.loader#state-3 { /* base */
+    background-image: url('loading_icon_state1.png');
+    animation-delay: 0.95s;
+}
+.loader#state-4 { /* text */
+    background-image: url('loading_icon_state3.png');
+    animation-delay: 1.45s;
+}
+.loader#state-5 { /* base */
+    background-image: url('loading_icon_state1.png');
+    animation: none; /* this makes sure that the baseline is always visible */
+    -webkit-animation: none;
+}
+@keyframes fade {
+    0% {
+        opacity: 1;
+    }
+    8% {
+        opacity: 1;
+    }
+    25% {
+        opacity: 0;
+    }
+    83% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* 
+-- =================
 -- COMMON STYLES
 -- =================
 */
 
 body {
+    background-color: rgb(0, 4, 34);
     background-image: url(main_bg.png);
     display: flex;
     flex-direction: column;
@@ -253,7 +368,7 @@ tr {
     -moz-box-shadow: 0px 0px 200px 100px rgba(0,0,0,0.95) inset;
 }
 
-#table-container > .b1-content > div:first-child {
+#table-container > .b1-content > #armor-jewelry-columns {
     display: flex;
     justify-content: space-between;
 }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="loading">
 <head>
     <meta charset="UTF-8">
     {% with the_gear = char_sheet.itemSlots %}
@@ -9,6 +9,7 @@
             url_search = new URLSearchParams(window.location.search)
             ls = localStorage.getItem('gear-config');
             if (ls == null || url_search.has('hc') || url_search.has('item')) {
+                document.getElementsByTagName('html')[0].classList.toggle('loading');
                 localStorage.setItem('gear-config', '{{dict(gear_copy, **cl_name) | encode_gear_config}}');
             }
             else {
@@ -35,6 +36,14 @@
     <title>LOTRO Character Stats Panel</title>
 </head>
 <body>
+    <div id="overlay-loading">
+        <p>Loading gear config, please wait...</p>
+        <div class="loader" id="state-5"></div>
+        <div class="loader" id="state-4"></div>
+        <div class="loader" id="state-3"></div>
+        <div class="loader" id="state-2"></div>
+        <div class="loader" id="state-1"></div>
+    </div>
     <a href="{{ url_for('stats_panel_page') }}">
         <h1>LOTRO Character Stat Panel</h1>
     </a>
@@ -72,7 +81,7 @@
             <form action = {{ url_for('handle_choices') }} method="POST" class="noshow">
                 <!-- It is important that we do this as a form submission so the redirect can work -->
                 <input type="text" id="load_stored" name="load_stored">
-                <button type="submit" id="load">Import</button>
+                <button type="submit" id="load" onclick="document.getElementsByTagName('html')[0].classList.toggle('loading')">Import</button>
             </form>
             {% with the_gear = char_sheet.itemSlots %}
                 {% set gear_copy = the_gear.copy() %}
@@ -97,7 +106,7 @@
             <div class="b1-tr"></div>
             <div class="b1-l"></div>
             <div class="b1-content">
-                <div>
+                <div id="armor-jewelry-columns">
                     <table id="jewelry">
                         {% for item_slot in char_sheet.itemSlots.items() %}
                             {% if item_slot[1]['slot-type'] == 'jewelry' %}
