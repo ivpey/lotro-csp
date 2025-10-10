@@ -1,4 +1,5 @@
 from class_StatTable import Stat_Table
+from calcstat import CalcStat
 
 class Character_Sheet:
 
@@ -72,6 +73,8 @@ class Character_Sheet:
         }
 
         self.class_name = class_name
+
+        self.character_level = 150
 
         self.class_list = ['Beorning', 'Brawler', 'Burglar', 'Captain',
                            'Champion', 'Guardian', 'Hunter', 'Lore-master',
@@ -203,6 +206,14 @@ class Character_Sheet:
 
     def getTotalStat(self, stat, statDerivTable = None):
         res = 0
+
+        # we only want the meaningful base stats from character level
+        if stat in ['Might', 'Agility', 'Vitality', 'Will', 'Fate', 'Maximum Morale']:
+            c = ''.join([class_name_part.capitalize() for class_name_part in self.class_name.split('-')])
+            if stat == 'Maximum Morale':
+                res = CalcStat(c + 'CDBaseMorale', self.character_level)
+            else:
+                res = CalcStat(c + 'CDBase' + stat, self.character_level)
 
         # first we sum all the occurrences of the given stat in all items
         for slot in self.itemSlots.items():

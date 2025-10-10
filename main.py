@@ -88,16 +88,19 @@ def handle_choices():
     # making sure that when we import, the active config from before the import is used for the comparison,
     # this is practically a clumsy way of enabling comparison between two custom configs
     #
-    # the cases when we clear all items or load from LocalStorage would result in deltas which were 100% up or down,
-    # this is handled in the HTML;
     # also in the HTML we handle deltas on class change - simply do not show them, like the other two cases
     s['old_stats'] = copy.deepcopy(s['curr_stats'])
 
     import_str = request.form.get('load_stored')
     selected_class = request.form.get('class-selection')
+    char_level = request.form.get('char-level')
+    clear_config = request.form.get('clear-config')
+
+    if char_level is not None:
+        s['curr_stats'].character_level = int(char_level)
 
     # the request is made from the Clear button
-    if import_str is None and selected_class is None:
+    if clear_config is not None:
         s['curr_stats'].itemSlots = Character_Sheet().itemSlots
         return redirect(url_for('stats_panel_page', hc = 'y'))
     
@@ -106,33 +109,49 @@ def handle_choices():
         s['curr_stats'].class_name = selected_class
         return redirect(url_for('stats_panel_page', hc = 'y'))
     
-    # try to parse the imported string
-    try:
-        a = json.loads(zlib.decompress(b64decode(import_str)).decode('utf-8'))
-    except:
-        s['curr_stats'].itemSlots = Character_Sheet().itemSlots
-        flash('Import failed.')
-        return redirect(url_for('stats_panel_page', hc = 'y'))
-
-    # making sure we received the expected structure and values
-    if (not isinstance(a, dict)):
-        flash('Import failed.')
-        return redirect(url_for('stats_panel_page', hc = 'y'))
-    
-    for k in a.keys():
-        if (k not in Character_Sheet().itemSlots.keys() and k != 'class'):
+    if import_str is not None:
+        # try to parse the imported string
+        try:
+            a = json.loads(zlib.decompress(b64decode(import_str)).decode('utf-8'))
+        except:
+            #s['curr_stats'].itemSlots = Character_Sheet().itemSlots
             flash('Import failed.')
             return redirect(url_for('stats_panel_page', hc = 'y'))
 
-    if ('class' in a.keys() and a['class'] in s['curr_stats'].class_list): # there is a 'class' key and contains expected value
-        s['curr_stats'].class_name = a['class']
-        a.pop('class')
-        s['curr_stats'].itemSlots = a
-    elif ('class' in a.keys()): # there is a 'class' key but contains unexpected value
-        a.pop('class')
-        s['curr_stats'].itemSlots = a
-    else:
-        s['curr_stats'].itemSlots = a
+        # making sure we received the expected structure and values
+        if (not isinstance(a, dict)):
+            flash('Import failed.')
+            return redirect(url_for('stats_panel_page', hc = 'y'))
+        
+        # without this we cannot do anything
+        if 'itemSlots' not in a.keys():
+            flash('Import failed.')
+            return redirect(url_for('stats_panel_page', hc = 'y'))
+
+        for k in a['itemSlots'].keys():
+            if (k not in Character_Sheet().itemSlots.keys()): #and k != 'class' and k!= 'lvl'):
+                flash('Import failed.')
+                return redirect(url_for('stats_panel_page', hc = 'y'))
+
+        # without this, we can use a default value
+        if 'lvl' in a.keys():
+            s['curr_stats'].character_level = Character_Sheet().character_level if a['lvl'] is None else int(a['lvl'])
+            # when importing, deltas are shown as comparing with baseline lvl 150 - i.e. the default for an empty class instance
+            s['old_stats'].character_level = Character_Sheet().character_level if a['lvl'] is None else int(a['lvl'])
+        else:
+            s['curr_stats'].character_level = Character_Sheet().character_level
+
+        # without this, we can use a default value
+        if 'class' in a.keys() and a['class'] in s['curr_stats'].class_list: # there is a 'class' key and contains expected value
+            s['curr_stats'].class_name = a['class']
+
+        s['curr_stats'].itemSlots = a['itemSlots']
+        
+        # when we import, the comparison is always done against the baseline character stats;
+        # it doesn't make sense to have deltas in this case so we handle it here, i.e.
+        # by checking if all items are empty
+        if bool([item_old for item_old in s['old_stats'].itemSlots.items() if item_old[1]['item-info'] != {}]) == False:
+            s['old_stats'] = copy.deepcopy(s['curr_stats'])
 
     return redirect(url_for('stats_panel_page', hc = 'y'))
 
@@ -195,4 +214,4 @@ def load_items():
         old_stats = s['old_stats'])
 
 if __name__ == '__main__':  
-   app.run(host = '0.0.0.0', port = 5000)
+   app.run(host = '0.0.0.0', port = 5000, debug = True)

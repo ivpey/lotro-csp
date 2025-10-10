@@ -14,6 +14,7 @@ Live demo available at https://lotro-csp.onrender.com/
 - ~~The app cannot handle Legacy of Morgoth slot-specific essences.~~
 - - (Update - September 2025) Slot-specific essences are now treated as regular ones and handled correctly.
 - Regular essences are limited to single-stat ones.
-- Baseline character stats coming from level are **not** taken into account.
+- ~~Baseline character stats coming from level are **not** taken into account.~~
+- - (Update - October 2025) Level-based base stats are now included thanks to Giseldah's CalcStat module.
 
 Border images and the CSS style to use them seen at [Giseldah](https://giseldah.github.io/).

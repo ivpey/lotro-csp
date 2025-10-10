@@ -26,6 +26,10 @@
 -- the orange color was sampled from a screenshot of the in-game loading screen, then used to fill an entire layer above the eye and setting Blending Mode = Linear Light
 */
 
+html {
+    min-width: 620px;
+}
+
 html body > a,
 html body > .inner {
     visibility: visible;
@@ -258,13 +262,58 @@ h1 {
     margin-bottom: 15px;
 }
 
+#class-select .b1-content {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    position: relative;
+}
+#class-select label[for="char-level"] {
+    position: absolute;
+    top: -33px;
+    left: 78px;
+    margin: 0;
+}
+#class-select label[for="char-level"] img {
+    width: 110px;
+    height: 120px;
+}
+#char-level {
+    all: unset;
+    width: 80px;
+    font-size: 50px;
+    color: black;
+    font-weight: bold;
+    position: relative;
+    top: -5px;
+    left: -10px;
+    text-align: center;
+    text-shadow:1px 1px 10px #dadada, 1px 1px 10px #a7a7a7;
+}
+#class-select form + form {
+    margin-top: 7px;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
 #class-select form {
     display: flex;
     justify-content: center;
 }
 
 #class-select form label {
-    margin-right: 15px;
+    margin-right: 14px;
 }
 
 #class-select [type=radio] { 
@@ -294,56 +343,123 @@ h1 {
 -- =================
 */
 
-/* 
--- =================
--- IMPORT / EXPORT
--- =================
-*/
-
-#import-export {
-    display: flex;
-    flex-direction: column;
-}
-
-#import-export > div {
-    display: flex;
-    justify-content: space-between;
-}
-
-#import-export form:not(#clear-gear),
-#import-export > input {
-    margin-top: 10px;
-}
-
-#import-export form {
-    display: flex;
-}
-
-#import-export input {
-    width: auto;
-    flex-grow: 1;
-}
-
-#import-export form input {
-    margin-right: 10px;
-}
-
-/* 
--- =================
--- END
--- IMPORT / EXPORT
--- =================
-*/
-
 #main {
     flex-direction: row;
     margin-top: 15px;
+    position: relative;
 }
 
 tr {
     position: relative;
     display: block;
     margin-bottom: 5px;
+}
+
+/* 
+-- =================
+-- SIDE BUTTONS
+--
+-- icons from https://www.iconfinder.com/search/icons?family=sympletts
+-- put into button-icon-template.xcf made in GIMP from the borders used for the rest of the app
+-- 
+-- =================
+*/
+
+#side-buttons {
+    position: absolute;
+    right: -47px;
+    top: 30px;
+    display: flex;
+    flex-direction: column;
+    row-gap: 10px;
+}
+#side-buttons img {
+    width: 30px;
+    height: 30px;
+    filter: invert(1); /* most SVGs are with black outline, this changes the outline to white */
+}
+#side-buttons button {
+    all: inherit;
+    cursor: pointer;
+}
+
+#side-buttons a,
+#side-buttons button {
+    background-color: #75200c;
+    padding: 8px 8px 5px 8px;
+    border: 1px solid #75200c;
+    border-radius: 3px;
+    transition: all 200ms ease-in-out;
+}
+#side-buttons a:hover,
+#side-buttons button:hover {
+    background-color: #A62D12;
+    border-color: #A62D12;
+}
+
+/* 
+-- =================
+-- POP-UPS
+--
+-- seen at https://codepen.io/imprakash/pen/GgNMXO
+-- =================
+*/
+.overlay,
+html.loading .overlay {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.7);
+    transition: opacity 500ms;
+    display: none;
+    opacity: 0;
+    visibility: hidden;
+}
+.overlay:target {
+    display: block;
+    opacity: 1;
+    visibility: visible;
+}
+.popup {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px 30px 20px 20px;
+    background: #fff;
+    border-radius: 5px;
+    width: 30%;
+    min-width: 230px;
+    position: relative;
+    color: rgba(0, 0, 0, 0.92);
+}
+.popup .close {
+    position: absolute;
+    top: 0px;
+    right: 10px;
+    font-size: 30px;
+    font-weight: bold;
+    text-decoration: none;
+    color: #333;
+}
+.popup h2 {
+    margin: 0px 0px 20px 0px;
+}
+.popup form {
+    display: flex;
+    flex-direction: row;
+}
+.popup form input {
+    flex-grow: 1;
+}
+
+#import-popup button[type="submit"] {
+    margin-left: 10px;
+}
+
+#export-popup input {
+    width: 90%;
 }
 
 /* 
@@ -552,7 +668,7 @@ td span:first-child {
 .tooltip {
     position: absolute;
     top: 2px;
-    left: 70px;
+    left: 68px;
     visibility: hidden;
     border: 5px solid;
     border-image-slice: 1;
@@ -567,7 +683,7 @@ td span:first-child {
 }
 
 #armor .tooltip {
-    left: -318px;
+    left: -314px;
 }
 
 #weapons .tooltip {
@@ -630,7 +746,7 @@ this is the default state before clicking any slot
 -- =================
 */
 
-@media screen and (max-width: 1200px) {
+@media screen and (max-width: 1250px) {
     .inner {
         width: 800px;
     }
@@ -651,9 +767,27 @@ this is the default state before clicking any slot
     #table-container > .b1-content {
         justify-content: normal;
     }
+    .popup {
+        min-width: 350px;
+    }
+    #class-select label[for="char-level"] {
+        left: 0;
+    }
+    #class-select form label {
+        margin-right: 10px;
+    }
+    #char-level {
+        left: -5px;
+    }
+    #weapons .item + td {
+        left: 95px;
+    }
+    #weapons .tooltip {
+        left: -25px;
+    }
 }
 
-@media screen and (max-width: 820px) {
+@media screen and (max-width: 950px) {
     h1, .inner {
         width: 450px;
     }
@@ -680,6 +814,27 @@ this is the default state before clicking any slot
     }
     #stat-values table td:nth-child(2) span:first-child {
         margin-left: 100px;
+    }
+    .popup form {
+        flex-direction: column;
+    }
+    #import-popup button[type="submit"] {
+        margin-left: 0px;
+        margin-top: 10px;
+    }
+    #class-select .b1-content {
+        flex-direction: column;
+    }
+    #class-select form {
+        margin-bottom: 30px;
+        margin-top: 15px;
+    }
+    #class-select label[for="char-level"] {
+        left: 140px;
+        top: -18px;
+    }
+    #char-level {
+        left: -10px;
     }
 }
 /*
