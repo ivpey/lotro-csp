@@ -703,6 +703,16 @@ td span:first-child {
     bottom: 3px;
 }
 
+.tooltip li:has(> span[typeof='mw:File']) {
+    color: limegreen !important;
+    display: flex;
+    align-items: center;
+}
+
+.tooltip li:has(a[href='https://lotro-wiki.com/wiki/File:Empty_Essence_Slot-icon.png']) {
+    color: grey !important;
+}
+
 #jewelry .item .img-container,
 #armor .item .img-container,
 #weapons .item .img-container {

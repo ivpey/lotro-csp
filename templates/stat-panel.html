@@ -89,6 +89,7 @@
         {% endwith %}
     </div>
     <div id="main" class="inner">
+        {% set remove_stats_from_dropdown = ('In-Combat Morale Regeneration', 'Non-Combat Morale Regeneration', 'Maximum Power', 'In-Combat Power Regeneration', 'Non-Combat Power Regeneration') %}
         <div id="table-container" class="b1-parent-container">
             <div class="b1-tl"></div>
             <div class="b1-tm"></div>
@@ -134,7 +135,9 @@
                                                     <select name="essence_{{essence}}_stat">
                                                         <option value="0" {% if item_slot[1]['item-info']['essences'][essence]|length == 0 %} selected {% endif %} disabled>Essence {{ loop.index }}...</option>
                                                         {% for stat in stat_sheet.listAllStats() %}
-                                                        <option value="{{stat}}" {{ 'selected' if stat in item_slot[1]['item-info']['essences'][essence] }}>{{stat}}</option>
+                                                            {% if stat not in remove_stats_from_dropdown %}
+                                                                <option value="{{stat}}" {{ 'selected' if stat in item_slot[1]['item-info']['essences'][essence] }}>{{stat}}</option>
+                                                            {% endif %}
                                                         {% endfor %}
                                                     </select>
                                                     <input type="number" name="essence_{{essence}}_value" value="{{ 0 if item_slot[1]['item-info']['essences'][essence].values()|length == 0 else item_slot[1]['item-info']['essences'][essence].values()|list|join }}">
@@ -153,7 +156,7 @@
                                 </td>
                                 {% if item_slot[1]['item-info']['name'] %}
                                 <td class="tooltip">
-                                    {{ item_slot[1]['item-info']['name'] | format_url_unquote | item_tooltip | safe }}
+                                    {{ item_slot[1]['item-info']['name'] | format_url_unquote | item_tooltip(item_slot[1]['item-info']['essences']) | safe }}
                                 </td>
                                 {% endif %}
                             </tr>
@@ -198,7 +201,9 @@
                                                     <select name="essence_{{essence}}_stat">
                                                         <option value="" {% if item_slot[1]['item-info']['essences'][essence]|length == 0 %} selected {% endif %} disabled>Essence {{ loop.index }}...</option>
                                                         {% for stat in stat_sheet.listAllStats() %}
-                                                        <option value="{{stat}}" {{ 'selected' if stat in item_slot[1]['item-info']['essences'][essence] }}>{{stat}}</option>
+                                                            {% if stat not in remove_stats_from_dropdown %}
+                                                                <option value="{{stat}}" {{ 'selected' if stat in item_slot[1]['item-info']['essences'][essence] }}>{{stat}}</option>
+                                                            {% endif %}
                                                         {% endfor %}
                                                     </select>
                                                     <input type="number" name="essence_{{essence}}_value" value="{{ 0 if item_slot[1]['item-info']['essences'][essence].values()|length == 0 else item_slot[1]['item-info']['essences'][essence].values()|list|join }}">
@@ -217,7 +222,7 @@
                                 </td>
                                 {% if item_slot[1]['item-info']['name'] %}
                                 <td class="tooltip">
-                                    {{ item_slot[1]['item-info']['name'] | format_url_unquote | item_tooltip | safe }}
+                                    {{ item_slot[1]['item-info']['name'] | format_url_unquote | item_tooltip(item_slot[1]['item-info']['essences']) | safe }}
                                 </td>
                                 {% endif %}
                             </tr>
@@ -264,7 +269,9 @@
                                                     <select name="essence_{{essence}}_stat">
                                                         <option value="" {% if item_slot[1]['item-info']['essences'][essence]|length == 0 %} selected {% endif %} disabled>Essence {{ loop.index }}...</option>
                                                         {% for stat in stat_sheet.listAllStats() %}
-                                                        <option value="{{stat}}" {{ 'selected' if stat in item_slot[1]['item-info']['essences'][essence] }}>{{stat}}</option>
+                                                            {% if stat not in remove_stats_from_dropdown %}
+                                                                <option value="{{stat}}" {{ 'selected' if stat in item_slot[1]['item-info']['essences'][essence] }}>{{stat}}</option>
+                                                            {% endif %}
                                                         {% endfor %}
                                                     </select>
                                                     <input type="number" name="essence_{{essence}}_value" value="{{ 0 if item_slot[1]['item-info']['essences'][essence].values()|length == 0 else item_slot[1]['item-info']['essences'][essence].values()|list|join }}">
@@ -283,7 +290,7 @@
                                 </td>
                                 {% if item_slot[1]['item-info']['name'] %}
                                 <td class="tooltip">
-                                    {{ item_slot[1]['item-info']['name'] | format_url_unquote | item_tooltip | safe }}
+                                    {{ item_slot[1]['item-info']['name'] | format_url_unquote | item_tooltip(item_slot[1]['item-info']['essences']) | safe }}
                                 </td>
                                 {% endif %}
                             </tr>
