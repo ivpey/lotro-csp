@@ -11,6 +11,10 @@ from base64 import b64encode
 from bs4 import BeautifulSoup
 import re
 
+from class_StatTable import Stat_Table
+
+st = Stat_Table()
+
 # this method of loading filters from a separate file seen at
 # https://stackoverflow.com/a/24435908
 
@@ -167,7 +171,37 @@ def item_tooltip(context, itemName, itemEssences):
             the_LI_tag = essence_images_list[int(essence[0]) - 1].parent.parent.parent
             the_LI_tag.clear()
             the_LI_tag.append(the_SPAN_tag_2nd_parent_of_IMG)
-            the_LI_tag.append(f' +{list(essence[1].values())[0]} {list(essence[1].keys())[0]}')
+            #the_LI_tag.append(f' +{list(essence[1].values())[0]} {list(essence[1].keys())[0]}')
+
+            # creating the input...
+            essence_val_input_wrapper = item_page_BS.new_tag(name = 'span', role = 'textbox', string = list(essence[1].values())[0])
+            essence_val_input_wrapper['contenteditable'] = 'True'
+
+            #essence_val_input_tag = item_page_BS.new_tag('input', type = 'number', value = list(essence[1].values())[0])
+            #essence_val_input_tag['class'] = 'essence_val'
+            #essence_val_input_wrapper.append(essence_val_input_tag)
+
+            # and the dropdown
+            essence_stat_names_dropdown_wrapper = item_page_BS.new_tag(name = 'div')
+            essence_stat_names_dropdown_tag = item_page_BS.new_tag(name = 'select')
+            essence_stat_names_dropdown_tag['name'] = f'essence_{essence[0]}_stat'
+            essence_stat_names_dropdown_tag['class'] = 'essence_name'
+            essence_stat_names_dropdown_wrapper.append(essence_stat_names_dropdown_tag)
+
+            for stat in st.listAllStats():
+                
+                if stat in ['In-Combat Morale Regeneration', 'Non-Combat Morale Regeneration', 'Maximum Power', 'In-Combat Power Regeneration', 'Non-Combat Power Regeneration']:
+                    continue
+
+                dropdown_option = item_page_BS.new_tag(name = 'option', value = stat, string = stat)
+                
+                if list(essence[1].keys())[0] == stat:
+                    dropdown_option['selected'] = 'selected'
+                essence_stat_names_dropdown_tag.append(dropdown_option)
+            
+            the_LI_tag.append(essence_val_input_wrapper)
+            the_LI_tag.append(essence_stat_names_dropdown_wrapper)
+
 
         to_return = str(tooltip_content)
 

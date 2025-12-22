@@ -711,7 +711,7 @@ td span:first-child {
 }
 
 .tooltip-content.itemtooltip {
-    width: 14em !important;
+    width: 16em !important;
     display: flex;
     flex-flow: wrap;
 }
@@ -749,7 +749,7 @@ td span:first-child {
 }
 
 #armor .tooltip {
-    left: -242px;
+    left: -274px;
 }
 
 #weapons .tooltip {
@@ -825,6 +825,92 @@ td span:first-child {
 .tooltip span:has([typeof='mw:File']) > div[style='height:15px'] {
     width: 0px !important;
 }
+
+
+
+
+
+
+.tooltip li:has(span[contenteditable]) {
+    /* border-top: 1px solid rgb(75 85 99); */
+    padding: 5px 0px;
+    display: flex;
+    gap: 5px;
+    align-items: anchor-center;
+}
+/* .tooltip li:has(span[contenteditable]):has(+ div) {
+    border-bottom: 1px solid rgb(75 85 99);
+} */
+.tooltip .essence_name {
+    appearance: none;
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    width: 100%;
+    line-height: 22px;
+    text-wrap: auto;
+    padding: 4px 5px;
+    position: relative;
+}
+.tooltip div:has(> .essence_name):hover {
+    outline:1px solid rgb(75 85 99);
+}
+
+.tooltip div:has(> .essence_name) {
+    position: relative;
+    flex-grow: 1;
+}
+/* seen over at https://blog.logrocket.com/creating-custom-select-dropdown-css/ */
+.tooltip div:has(> .essence_name):after {
+    --size: 0.3rem;
+    position: absolute;
+    content: '';
+    pointer-events: none;
+    border-left: var(--size) solid transparent;
+    border-right: var(--size) solid transparent;
+    border-top: var(--size) solid transparent;
+    top: 13px;
+    right: 5px;
+}
+.tooltip div:has(> .essence_name):hover:after {
+    border-top-color: rgb(75 85 99);
+}
+
+span[contenteditable]:before {
+    content: '+';
+    position: absolute;
+    top: 4px;
+    left: -10px;
+}
+span[contenteditable]:focus,
+span[contenteditable]:active,
+.tooltip .essence_name:focus,
+.tooltip .essence_name:active {
+    outline: 0px solid transparent;
+}
+span[contenteditable] {
+    line-height: 17px;
+    border-bottom: 1px dashed white;
+    padding: 4px 0px;
+    position: relative;
+    margin-left: 6px;
+    max-width: 55px;
+}
+
+
+.tooltip span[contenteditable]:focus,
+.tooltip span[contenteditable]:active,
+.tooltip .essence_name:focus,
+.tooltip .essence_name:active {
+    color: white;
+}
+.tooltip .essence_name:focus option,
+.tooltip .essence_name:active option {
+    color: black;
+}
+
+
 
 #jewelry .item .img-container,
 #armor .item .img-container,
@@ -1001,7 +1087,7 @@ this is the default state before clicking any slot
     right: -3px;
 }
 .virtue-images:hover > .remove-virtue,
-.img-container:hover .remove-item {
+tr:has(.item):hover .remove-item {
     visibility: visible;
     opacity: 1;
 }
@@ -1133,6 +1219,11 @@ this is the default state before clicking any slot
     }
     #weapons .tooltip {
         left: 80px;
+    }
+    .virtue:last-child .virtue-tooltip,
+    .virtue:nth-last-child(2) .virtue-tooltip {
+        left: auto;
+        right: 0;
     }
 }
 /*

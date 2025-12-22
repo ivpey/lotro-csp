@@ -515,5 +515,17 @@
             </div>
         </div>
     </div>
+    <script>
+        // https://stackoverflow.com/a/75120416
+        function limitContentEditableToDigitsOnly(event) {
+            if (!['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'ArrowLeft', 'ArrowRight', 'Backspace', 'Delete'].includes(event.key)) {
+                event.preventDefault();
+            }
+        };
+        let editable_spans = document.querySelectorAll('span[contenteditable]');
+        editable_spans.forEach(span => {
+            span.addEventListener('keydown', limitContentEditableToDigitsOnly)
+        }) 
+    </script>
 </body>
 </html>
