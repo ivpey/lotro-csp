@@ -72,14 +72,29 @@ class Character_Sheet:
             }
         }
 
+        self.virtueSlots = {
+            '1': {},
+            '2': {},
+            '3': {},
+            '4': {},
+            '5': {}
+        }
+
         self.class_name = class_name
 
         self.character_level = 150
 
-        self.class_list = ['Beorning', 'Brawler', 'Burglar', 'Captain',
-                           'Champion', 'Guardian', 'Hunter', 'Lore-master',
-                           'Mariner', 'Minstrel', 'Rune-keeper', 'Warden'
-                          ]
+        self.class_list = [
+            'Beorning', 'Brawler', 'Burglar', 'Captain',
+            'Champion', 'Guardian', 'Hunter', 'Lore-master',
+            'Mariner', 'Minstrel', 'Rune-keeper', 'Warden'
+        ]
+        
+        self.virtues_list = [
+            'Charity', 'Compassion', 'Confidence', 'Determination', 'Discipline', 'Empathy', 'Fidelity',
+            'Fortitude', 'Honesty', 'Honour', 'Idealism', 'Innocence', 'Justice', 'Loyalty', 'Mercy',
+            'Patience', 'Tolerance', 'Valour', 'Wisdom', 'Wit', 'Zeal'
+        ]
 
     def validateSlotUpdate(self, slot, slotData = None, essences = None):
 
@@ -230,6 +245,20 @@ class Character_Sheet:
                     if (stat in slot[1]['item-info']['essences'][essence]):
 
                         res = res + int(slot[1]['item-info']['essences'][essence][stat])
+
+        # handling virtues
+        for v_slot in self.virtueSlots.items():
+
+            if len(v_slot[1]) == 0:
+                continue
+
+            if (stat in v_slot[1]['active_stats'].keys()):
+                
+                res = res + v_slot[1]['active_stats'][stat]
+
+            if (stat in v_slot[1]['passive_stats'].keys()):
+                
+                res = res + v_slot[1]['passive_stats'][stat]
 
         # if we supplied a reference table, then we use it as map
         if (isinstance(statDerivTable, Stat_Table)):

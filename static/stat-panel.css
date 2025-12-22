@@ -647,25 +647,36 @@ td span:first-child {
 .tooltip li a {
     color: white;
     margin-left: 0px !important;
+    font-size: 14px;
+    font-variant: normal !important;
+    letter-spacing: 0.5px;
 }
 .tooltip li.attrib {
     color: limegreen;
 }
 
 .tooltip figure {
-    margin: 0px 15px 0px 0px;
+    /*margin: 3px 8px 0px 0px;*/
+    margin: 0px;
 }
 
 .tooltip ul {
     padding: 0px;
     margin-bottom: 0px;
+    width: 100%; /* this is needed because of the flex-flow on the parent */
+    margin-top: 10px;
 }
 
-.tooltip-content > span:first-child {
+/* .tooltip-content > span:first-child {
     float: left;
+} */
+
+.tooltip li.attrib ~ li:has(> span):not(:last-child) {
+    margin: 2px 0px;
 }
 
-.tooltip {
+
+/* .tooltip {
     position: absolute;
     top: 2px;
     left: 68px;
@@ -676,6 +687,61 @@ td span:first-child {
     border-image-source: linear-gradient(90deg,rgba(205, 204, 206, 1) 41%, rgba(149, 149, 148, 1) 69%, rgba(102, 102, 103, 1) 100%);
     background-color: black;
     z-index: 2;
+} */
+
+.tooltip {
+    position: absolute;
+    top: 2px;
+    left: 60px;
+    visibility: hidden;
+    border-width: 1px;
+    border-color: rgb(75 85 99);
+    background: linear-gradient(#0a0e14, #152035, #0a0e14);
+    border-radius: 0.25rem;
+    border-style: solid;
+    z-index: 2;
+}
+
+.tooltip a {
+    text-decoration: none;
+}
+
+.tooltip .flavor {
+    color: #cccc7f;
+}
+
+.tooltip-content.itemtooltip {
+    width: 14em !important;
+    display: flex;
+    flex-flow: wrap;
+}
+
+.tooltip-content.itemtooltip > span:first-of-type,
+.tooltip-content.itemtooltip > span:first-of-type * {
+    display: inline-flex;
+}
+.tooltip-content.itemtooltip > span:first-of-type {
+    align-self: anchor-center;
+}
+.tooltip-content.itemtooltip > span:nth-of-type(2) {
+    align-self: anchor-center;
+    margin-left: 5px;
+    width: 185px;
+    line-height: normal !important;
+}
+
+.tt-not-found {
+    min-width: 100px;
+    min-height: 20px;
+    padding: 15px 10px 15px 15px;
+}
+
+#armor .tooltip:has(.tt-not-found) {
+    left: -211px;
+}
+
+#weapons .tooltip:has(.tt-not-found) {
+    left: -62px;
 }
 
 #jewelry .tooltip {
@@ -683,13 +749,13 @@ td span:first-child {
 }
 
 #armor .tooltip {
-    left: -314px;
+    left: -242px;
 }
 
 #weapons .tooltip {
     top: auto;
-    bottom: 8px; /* this should be changed if more weapon slot items are added */
-    left: -46px; /* this should be changed if more weapon slot items are added */
+    bottom: 65px; /* this should be changed if more weapon slot items are added */
+    left: 175px; /* this should be changed if more weapon slot items are added */
 }
 
 .item:hover + td + td.tooltip,
@@ -713,20 +779,67 @@ td span:first-child {
     color: grey !important;
 }
 
+.tooltip .qc-epic,.qc-epic a {
+    color: orange
+}
+
+.tooltip .qc-incomparable,.qc-incomparable a {
+    color: cyan;
+}
+
+.tooltip .qc-rare,.qc-rare a {
+    color: DarkMagenta
+}
+
+.tooltip .qc-uncommon,.qc-uncommon a {
+    color: yellow
+}
+
+.tooltip .qc-common,.qc-common a {
+    color: white
+}
+
+.tooltip .qc-epic,.qc-incomparable,.qc-uncommon,.qc-common {
+    text-shadow: black 0.05em 0.05em,black 0.1em 0.1em 1px;
+}
+
+.tooltip .qc-rare {
+    text-shadow: black 0.05em 0.05em 1px
+}
+
+.tooltip [class^='qc-'] {
+    font-size: 1em !important;
+}
+
+.tooltip span:has([typeof='mw:File']) {
+    display: flex;
+    align-items: anchor-center;
+}
+.tooltip [typeof='mw:File'] *,
+.tooltip [typeof='mw:File'] {
+    display: inline-flex;
+}
+.tooltip li:has([typeof='mw:File']):last-child {
+    margin-top: 5px;
+}
+.tooltip span:has([typeof='mw:File']) > div[style='height:15px'] {
+    width: 0px !important;
+}
+
 #jewelry .item .img-container,
 #armor .item .img-container,
 #weapons .item .img-container {
-    width: 58px;
-    height: 58px;
+    width: 50px;
+    height: 50px;
     border-style: solid;
     border-image-slice: 1;
     border-width: 3px;
     border-image-source: linear-gradient(90deg,rgba(205, 204, 206, 1) 41%, rgba(149, 149, 148, 1) 69%, rgba(102, 102, 103, 1) 100%);
 }
 
-.img-container img {
-    width: 52px;
-    height: 52px;
+.img-container .inside-img-container > img {
+    width: 44px;
+    height: 44px;
 }
 
 /* 
@@ -741,14 +854,188 @@ this is the default state before clicking any slot
 }
 /* this is after clicking on a slot */
 .inside-img-container {
-    width: 52px; /* has to be the same size as .img-container img */
-    height: 52px; /* has to be the same size as .img-container img */
+    width: 44px; /* has to be the same size as .img-container img */
+    height: 44px; /* has to be the same size as .img-container img */
     border-style: solid;
     border-image-slice: 1;
     border-width: 3px; /* same as .img-container */
     border-image-source: linear-gradient(0deg,rgba(255, 235, 8, 1) 10%, rgba(149, 149, 148, 0) 69%, rgba(102, 102, 103, 0) 100%);
 }
 
+/*
+-- =================
+-- VIRTUES
+-- =================
+*/
+
+#table-container h2 {
+    font-variant: small-caps;
+    letter-spacing: 0.5px;
+    font-weight: normal;
+}
+.virtue h2 {
+    margin-top: 0px;
+}
+
+#virtues {
+    display: flex;
+    flex-direction: column;
+    border-top: 2px solid rgb(75 85 99);
+    margin-top: 20px;
+}
+
+#virtues > h2 + div {
+    display: flex;
+    flex-direction: row;
+    gap: 25px;
+    margin-bottom: 15px;
+}
+
+.virtue {
+    position: relative;
+    width: 64px;
+    height: 64px;
+}
+.virtue-icon,
+.virtue-border {
+    position: absolute;
+}
+
+.virtue-images {
+    cursor: pointer;
+    height: 64px; /* height has to be set because both children are absolutely positioned
+                     and thus the parent acts like a 0-height element;
+
+                     this number should be equal to the size of the img elements inside
+                  */
+}
+.virtue-selection {
+    top: -248px;
+    position: relative;
+    z-index: 3;
+}
+.virtue-selection > form > div:nth-of-type(1) {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+.virtue-selection > form select {
+    padding: 5px;
+}
+.virtue-selection > form select + input {
+    width: 40px;
+}
+
+/* virtue tooltip */
+.virtue-images:hover + div + .virtue-tooltip {
+    visibility: visible;
+}
+.virtue-tooltip {
+    left: 0px;
+    top: auto;
+    bottom: 64px;
+    min-width: 250px;
+    padding: 10px;
+}
+    /* row 1 - image and name */
+    .virtue-tooltip > div:nth-child(1) {
+        display: flex;
+    }
+    .vtt-icon {
+        width: 44px;
+        height: 44px;
+    }
+    .vtt-name {
+        align-self: anchor-center;
+        font-family: serif;
+        color: #C3B585;
+        font-variant: small-caps;
+        line-height: 1em;
+        font-size: 1.4em;
+        margin-left: 8px;
+    }
+
+    /* row 2 - virtue rank */
+    .virtue-tooltip > div:nth-child(2) {
+        display: flex;
+        justify-content: space-between;
+        margin: 15px 0px;
+    }
+    .virtue-tooltip > div:nth-child(2) > span:nth-of-type(1) {
+        color: #2AB51F;
+    }
+    .vtt-rank {
+        color: #C3B585;
+    }
+
+    /* list items */
+    .virtue-tooltip ul {
+        margin: 0px;
+    }
+    .virtue-tooltip li {
+        color: #99ff00;
+        line-height: 1.35em;
+    }
+
+    /* list items */
+    .virtue-tooltip > p {
+        margin: 15px 0px 5px 0px;
+        color: #C3B585;
+    }
+
+
+.remove-virtue,
+.remove-item {
+    position: absolute;
+    z-index: 5;
+    right: 0;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity .25s ease-in;
+    top: 0px;
+    right: 0px;
+}
+.remove-virtue,
+#weapons .remove-item {
+    top: -3px;
+    right: -3px;
+}
+.virtue-images:hover > .remove-virtue,
+.img-container:hover .remove-item {
+    visibility: visible;
+    opacity: 1;
+}
+.remove-virtue img,
+.remove-item img {
+    width: 15px;
+    height: 15px;
+    filter: invert(1);
+}
+.remove-virtue button[type='submit'],
+.remove-item button[type='submit'] {
+    all: unset;
+    padding: 3px;
+    background-color: #75200c;
+    display: inline-flex;
+    transition: background-color .25s ease-in;
+    border: 1px solid #cccccc;
+    border-radius: 50%;
+}
+.remove-virtue button[type='submit']:hover,
+.remove-item button[type='submit']:hover {
+    background-color: #A62D12;
+}
+.remove-virtue input,
+.remove-virtue select,
+.remove-item input {
+    visibility: hidden;
+    display: none;
+    width: 0px;
+    height: 0px;
+}
+#weapons .item {
+    position: relative; /* fixes the position of the small X button */
+}
 
 /*
 -- =================
@@ -771,9 +1058,6 @@ this is the default state before clicking any slot
     .tooltip > div {
         width: 13em !important;
     }
-    #armor .tooltip {
-        left: -234px;
-    }
     #table-container > .b1-content {
         justify-content: normal;
     }
@@ -793,7 +1077,8 @@ this is the default state before clicking any slot
         left: 95px;
     }
     #weapons .tooltip {
-        left: -25px;
+        left: 115px;
+        bottom: 68px;
     }
 }
 
@@ -845,6 +1130,9 @@ this is the default state before clicking any slot
     }
     #char-level {
         left: -10px;
+    }
+    #weapons .tooltip {
+        left: 80px;
     }
 }
 /*

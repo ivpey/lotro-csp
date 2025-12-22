@@ -2,36 +2,37 @@
 <html lang="en" class="loading">
 <head>
     <meta charset="UTF-8">
-    {% with the_gear = char_sheet.itemSlots %}
-        {% set gear_copy = {'itemSlots': the_gear.copy() } %}
-        {% set cl_name = {'class': char_sheet.class_name, 'lvl': char_sheet.character_level | default(150, true)} %}
-        <script>
-            url_search = new URLSearchParams(window.location.search)
-            ls = localStorage.getItem('gear-config');
-            if (ls == null || url_search.has('hc') || url_search.has('item')) {
-                document.getElementsByTagName('html')[0].classList.toggle('loading');
-                localStorage.setItem('gear-config', '{{dict(gear_copy, **cl_name) | encode_gear_config}}');
-            }
-            else {
-                const formData = new URLSearchParams();
-                formData.append('load_stored', ls);
+    {% set the_gear = char_sheet.itemSlots %}
+    {% set gear_copy = {'itemSlots': the_gear.copy() } %}
+    {% set the_virtues = char_sheet.virtueSlots %}
+    {% set virtues_copy = {'virtueSlots': the_virtues.copy() } %}
+    {% set cl_name = {'class': char_sheet.class_name, 'lvl': char_sheet.character_level | default(150, true)} %}
+    <script>
+        url_search = new URLSearchParams(window.location.search)
+        ls = localStorage.getItem('gear-config');
+        if (ls == null || url_search.has('hc') || url_search.has('item')) {
+            document.getElementsByTagName('html')[0].classList.toggle('loading');
+            localStorage.setItem('gear-config', "{{dict(dict(gear_copy, **virtues_copy), **cl_name) | encode_gear_config}}");
+        }
+        else {
+            const formData = new URLSearchParams();
+            formData.append('load_stored', ls);
 
-                fetch("{{ url_for('handle_choices') }}", {
-                    method : 'POST',
-                    headers: {
-                        'Content-Type' : 'application/x-www-form-urlencoded'
-                    },
-                    body: formData.toString()
-                }).then(
-                    response => {
-                        if (response.redirected) {
-                            window.location = response.url
-                        }
+            fetch("{{ url_for('handle_choices') }}", {
+                method : 'POST',
+                headers: {
+                    'Content-Type' : 'application/x-www-form-urlencoded'
+                },
+                body: formData.toString()
+            }).then(
+                response => {
+                    if (response.redirected) {
+                        window.location = response.url
                     }
-                )
-            }
-        </script>
-    {% endwith %}
+                }
+            )
+        }
+    </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='stat-panel.css') }}">
     <title>LOTRO Character Stats Panel</title>
 </head>
@@ -104,13 +105,22 @@
                                 <td class="item" onclick="this.nextElementSibling.classList.toggle('noshow')">
                                     <div class="img-container">
                                         <div class="inside-img-container">
-                                            <img
-                                                {% if item_slot[1]['item-info']['icon-url'] %}                  
-                                                    src="{{item_slot[1]['item-info']['icon-url']}}"
-                                                {% else %}
-                                                    src="{{ url_for('static', filename = item_slot[0] + '.png') }}"
-                                                {% endif %}
-                                            >
+                                            {% if item_slot[1]['item-info']['icon-url'] %}
+                                                <!--
+                                                    the endpoint already supports removing an item by setting the name to an empty string,
+                                                    so we are reusing this functionality via a hidden form from which only the submit button is exposed to the user
+                                                -->
+                                                <form class="remove-item" method="POST" action= {{ url_for('load_items', item = item_slot[0]) }}>
+                                                    <input name= "{{item_slot[0]}}" type="text" value="">
+                                                    <!-- the onclick here makes sure that clicking the X button does not open the item and essence selection element -->
+                                                    <button type="submit" onclick="event.stopPropagation();">
+                                                        <img src="{{ url_for('static', filename='close.svg') }}">
+                                                    </button>
+                                                </form>
+                                                <img src="{{item_slot[1]['item-info']['icon-url']}}">
+                                            {% else %}
+                                                <img src="{{ url_for('static', filename = item_slot[0] + '.png') }}">
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </td>
@@ -146,7 +156,6 @@
                                         {% endif %}
                                         <div>
                                             <button type="submit">Update</button>
-                                            <button onclick="document.getElementsByName('{{item_slot[0]}}')[0].value = ''; this.parentElement.submit()">Remove item</button>
                                         </div>
                                     </form>
                                     <div class="b1-r"></div>
@@ -170,13 +179,22 @@
                                 <td class="item" onclick="this.nextElementSibling.classList.toggle('noshow')">
                                     <div class="img-container">
                                         <div class="inside-img-container">
-                                            <img
-                                                {% if item_slot[1]['item-info']['icon-url'] %}                  
-                                                    src="{{item_slot[1]['item-info']['icon-url']}}"
-                                                {% else %}
-                                                    src="{{ url_for('static', filename = item_slot[0] + '.png') }}"
-                                                {% endif %}
-                                            >
+                                            {% if item_slot[1]['item-info']['icon-url'] %}
+                                                <!--
+                                                    the endpoint already supports removing an item by setting the name to an empty string,
+                                                    so we are reusing this functionality via a hidden form from which only the submit button is exposed to the user
+                                                -->
+                                                <form class="remove-item" method="POST" action= {{ url_for('load_items', item = item_slot[0]) }}>
+                                                    <input name= "{{item_slot[0]}}" type="text" value="">
+                                                    <!-- the onclick here makes sure that clicking the X button does not open the item and essence selection element -->
+                                                    <button type="submit" onclick="event.stopPropagation();">
+                                                        <img src="{{ url_for('static', filename='close.svg') }}">
+                                                    </button>
+                                                </form>
+                                                <img src="{{item_slot[1]['item-info']['icon-url']}}">
+                                            {% else %}
+                                                <img src="{{ url_for('static', filename = item_slot[0] + '.png') }}">
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </td>
@@ -212,7 +230,6 @@
                                         {% endif %}
                                         <div>
                                             <button type="submit">Update</button>
-                                            <button onclick="document.getElementsByName('{{item_slot[0]}}')[0].value = ''; this.parentElement.submit()">Remove item</button>
                                         </div>
                                     </form>
                                     <div class="b1-r"></div>
@@ -238,13 +255,22 @@
                                 <td class="item" onclick="this.nextElementSibling.classList.toggle('noshow')">
                                     <div class="img-container">
                                         <div class="inside-img-container">
-                                            <img
-                                                {% if item_slot[1]['item-info']['icon-url'] %}                  
-                                                    src="{{item_slot[1]['item-info']['icon-url']}}"
-                                                {% else %}
-                                                    src="{{ url_for('static', filename = item_slot[0] + '.png') }}"
-                                                {% endif %}
-                                            >
+                                            {% if item_slot[1]['item-info']['icon-url'] %}
+                                                <!--
+                                                    the endpoint already supports removing an item by setting the name to an empty string,
+                                                    so we are reusing this functionality via a hidden form from which only the submit button is exposed to the user
+                                                -->
+                                                <form class="remove-item" method="POST" action= {{ url_for('load_items', item = item_slot[0]) }}>
+                                                    <input name= "{{item_slot[0]}}" type="text" value="">
+                                                    <!-- the onclick here makes sure that clicking the X button does not open the item and essence selection element -->
+                                                    <button type="submit" onclick="event.stopPropagation();">
+                                                        <img src="{{ url_for('static', filename='close.svg') }}">
+                                                    </button>
+                                                </form>
+                                                <img src="{{item_slot[1]['item-info']['icon-url']}}">
+                                            {% else %}
+                                                <img src="{{ url_for('static', filename = item_slot[0] + '.png') }}">
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </td>
@@ -280,7 +306,6 @@
                                         {% endif %}
                                         <div>
                                             <button type="submit">Update</button>
-                                            <button onclick="document.getElementsByName('{{item_slot[0]}}')[0].value = ''; this.parentElement.submit()">Remove item</button>
                                         </div>
                                     </form>
                                     <div class="b1-r"></div>
@@ -297,6 +322,89 @@
                             {% endif %}
                         {% endfor %}
                     </table>
+                </div>
+                <div id = 'virtues'>
+                    <h2>Virtue Traits</h2>
+                    <div>
+                        {% for virtue_slot in char_sheet.virtueSlots.items() %}
+                        <div class="virtue">
+                            <div class="virtue-images" onclick="this.nextElementSibling.classList.toggle('noshow')">
+                                {% if virtue_slot[1] | length == 0 %}
+                                    <img class='virtue-border' src="{{ url_for('static', filename='virtue-inactive-border.jpg') }}">
+                                {% else %}
+                                    <!--
+                                        the endpoint already supports removing a virtue by setting the rank to 0,
+                                        so we are reusing this functionality via a hidden form from which only the submit button is exposed to the user
+                                    -->
+                                    <form class="remove-virtue" method="POST" action= {{ url_for('update_virtues', slot_nr = virtue_slot[0]) }}>
+                                        <select name="virtue_name">
+                                            <option value="{{virtue_slot[1]['name']}}" selected>{{virtue_slot[1]['name']}}</option>
+                                        </select>
+                                        <input type="number" name="virtue_rank" value = "0">
+                                        <!-- the onclick here makes sure that clicking the X button does not open the virtue-selection element -->
+                                        <button type="submit" onclick="event.stopPropagation();">
+                                            <img src="{{ url_for('static', filename='close.svg') }}">
+                                        </button>
+                                    </form>
+                                    <img class='virtue-icon' src="{{ url_for('static', filename= virtue_slot[1]['name'] + '-icon.png') }}">
+                                    <img class='virtue-border' src="{{ url_for('static', filename='virtue-active-border.png') }}">
+                                {% endif %}
+                            </div>
+                            <div class="virtue-selection noshow b1-parent-container">
+                                <div class="b1-tl"></div>
+                                <div class="b1-tm"></div>
+                                <div class="b1-tr"></div>
+                                <div class="b1-l"></div>
+                                <form class="b1-content" method="POST" action= {{ url_for('update_virtues', slot_nr = virtue_slot[0]) }}>
+                                        <h2>Virtue and rank:</h2>
+                                        <div>
+                                            <select name="virtue_name">
+                                                <option value="0" {% if virtue_slot[1] | length == 0 %} selected {% endif %} disabled>Choose a virtue...</option>
+                                                {% for virtue_name in char_sheet.virtues_list %}
+                                                    <option value="{{virtue_name}}" {{ 'selected' if (virtue_slot[1] | length != 0) and (virtue_slot[1]['name'] == virtue_name) }}>{{virtue_name}}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <input type="number" name="virtue_rank" value = "{{ 0 if (virtue_slot[1] | length == 0) else virtue_slot[1]['rank'] }}">
+                                        </div>
+                                    <div>
+                                        <button type="submit">Update</button>
+                                    </div>
+                                </form>
+                                <div class="b1-r"></div>
+                                <div class="b1-bl"></div>
+                                <div class="b1-bm"></div>
+                                <div class="b1-br"></div>
+                            </div>
+                            {% if virtue_slot[1] | length != 0 %}
+                                <div class="virtue-tooltip tooltip">
+                                    <div>
+                                        <img class='vtt-icon' src="{{ url_for('static', filename= virtue_slot[1]['name'] + '-icon.png') }}">
+                                        <span class="vtt-name">{{ virtue_slot[1]['name'] }}</span>
+                                    </div>
+                                    <div>
+                                        <span>Virtue</span>
+                                        <span class="vtt-rank">Rank: {{ virtue_slot[1]['rank'] }}</span>
+                                    </div>
+                                    <ul>
+                                        {% for active_stat in virtue_slot[1]['active_stats'].keys() %}
+                                            <li>
+                                                +{{ virtue_slot[1]['active_stats'][active_stat] }} {{ active_stat }}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                    <p>Passive bonus:</p>
+                                    <ul>
+                                        {% for passive_stat in virtue_slot[1]['passive_stats'].keys() %}
+                                            <li>
+                                                + {{ virtue_slot[1]['passive_stats'][passive_stat] }} {{ passive_stat }}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
             <div class="b1-r"></div>

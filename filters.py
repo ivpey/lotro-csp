@@ -126,6 +126,15 @@ def item_tooltip(context, itemName, itemEssences):
         # unused at present - 'https://lotro-wiki.com/images/e/ee/Essence_of_Critical_Defence_%28incomparable%29-icon.png'
         # unused at present - 'https://lotro-wiki.com/images/3/35/Essence_of_Restoration_%28incomparable%29-icon.png'
 
+        # making the item name a link
+        item_name_tag = tooltip_content.find('span', class_= re.compile(r'qc-'))
+        item_name_string = item_name_tag.string
+        the_link = item_page_BS.new_tag(name ='a', href='https://lotro-wiki.com/wiki/Item:' + urllib.parse.quote_plus(itemName).replace('+', '_'), target = '_blank')
+        the_link.string = item_name_string
+
+        item_name_tag.clear()
+        item_name_tag.append(the_link)
+        
         # if an item does not have essence slots
         #
         # apparently if a dict key does not exist and the reference to it is still passed to a filter function,
@@ -160,19 +169,10 @@ def item_tooltip(context, itemName, itemEssences):
             the_LI_tag.append(the_SPAN_tag_2nd_parent_of_IMG)
             the_LI_tag.append(f' +{list(essence[1].values())[0]} {list(essence[1].keys())[0]}')
 
-        # making the item name a link
-        item_name_tag = tooltip_content.find('span', class_= re.compile(r'qc-'))
-        item_name_string = item_name_tag.string
-        the_link = item_page_BS.new_tag(name ='a', href='https://lotro-wiki.com/wiki/Item:' + urllib.parse.quote_plus(itemName).replace('+', '_'), target = '_blank', style = 'color: inherit;')
-        the_link.string = item_name_string
-
-        item_name_tag.clear()
-        item_name_tag.append(the_link)
-
         to_return = str(tooltip_content)
 
     except:
-        to_return = 'Tooltip could not be loaded.'
+        to_return = "<div class='tt-not-found'>Tooltip could not be loaded.</div>"
     
     return to_return
 

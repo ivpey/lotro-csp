@@ -12,6 +12,8 @@ import zlib
 import json
 from uuid import uuid4
 
+from calcstat import CalcStat
+
 # ====================
 # import the custom filters
 # ====================
@@ -55,6 +57,26 @@ def session_handler(session):
         cipu[session['user']] = curr_sess
     
     return curr_sess
+
+calcstat_aliases = {
+    'Might': 'Might',
+    'Agility': 'Agility',
+    'Vitality': 'Vitality',
+    'Will': 'Will',
+    'Fate': 'Fate',
+    'Critical Rating': 'CritHit',
+    'Finesse Rating': 'Finesse',
+    'Physical Mastery Rating': 'PhyMas',
+    'Tactical Mastery Rating': 'TacMas',
+    'Outgoing Healing Rating': 'OutHeal',
+    'Resistance Rating': 'Resist',
+    'Block Rating': 'Block',
+    'Parry Rating': 'Parry',
+    'Evade Rating': 'Evade',
+    'Physical Mitigation': 'PhyMit',
+    'Tactical Mitigation': 'TacMit',
+    'Maximum Morale': 'Morale'
+}
 
 # enable caching for static files
 # seen at https://stackoverflow.com/questions/77569410/flask-possible-to-cache-images
@@ -146,6 +168,14 @@ def handle_choices():
             s['curr_stats'].class_name = a['class']
 
         s['curr_stats'].itemSlots = a['itemSlots']
+
+        # too lazy to go deeper into checks but ideally we should be confirming the expected structure
+        if 'virtueSlots' in a.keys():
+            if list(a['virtueSlots'].keys()) != ['1', '2', '3', '4', '5']:
+                flash('Import failed.')
+                return redirect(url_for('stats_panel_page', hc = 'y'))
+            
+            s['curr_stats'].virtueSlots = a['virtueSlots']
         
         # when we import, the comparison is always done against the baseline character stats;
         # it doesn't make sense to have deltas in this case so we handle it here, i.e.
@@ -212,6 +242,53 @@ def load_items():
         char_sheet = s['curr_stats'],
         stat_sheet = stat_sheet,
         old_stats = s['old_stats'])
+
+# endpoint to handle virtues
+@app.route("/update_virtues", methods = ['POST'])
+def update_virtues():
+    s = session_handler(session)
+
+    slot_nr = int(request.args.get('slot_nr'))
+    virtue_name = request.form.get('virtue_name')
+    virtue_rank = int(request.form.get('virtue_rank'))
+
+    print(virtue_name)
+
+    if (virtue_name not in s['curr_stats'].virtues_list):
+
+        flash('Invalid virtue name.')
+
+    if (virtue_rank == 0):
+
+        s['old_stats'] = copy.deepcopy(s['curr_stats'])
+        s['curr_stats'].virtueSlots[str(slot_nr)] = {}
+
+        flash(f'Removed virtue from slot {slot_nr}.')
+
+        return redirect(url_for('stats_panel_page', hc = 'y'))
+
+    s['old_stats'] = copy.deepcopy(s['curr_stats'])
+
+    s['curr_stats'].virtueSlots[str(slot_nr)] = {
+        'name': virtue_name,
+        'rank': virtue_rank,
+        'active_stats': {},
+        'passive_stats': {}
+    }
+
+    for stat in calcstat_aliases.keys():
+        active_stat_value = CalcStat(f'Virt{virtue_name}{calcstat_aliases[stat]}', virtue_rank)
+        passive_stat_value = CalcStat(f'Virt{virtue_name}VP{calcstat_aliases[stat]}', virtue_rank)
+
+        if active_stat_value != 0:
+            s['curr_stats'].virtueSlots[str(slot_nr)]['active_stats'].update({stat: round(active_stat_value)})
+
+        if passive_stat_value != 0:
+            s['curr_stats'].virtueSlots[str(slot_nr)]['passive_stats'].update({stat: round(passive_stat_value)})
+
+    flash(f'Updated virtue in slot {slot_nr}.')
+
+    return redirect(url_for('stats_panel_page', hc = 'y'))
 
 if __name__ == '__main__':  
    app.run(host = '0.0.0.0', port = 5000, debug = True)
