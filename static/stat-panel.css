@@ -712,7 +712,7 @@ td span:first-child {
 }
 
 .tooltip-content.itemtooltip {
-    width: 16em !important;
+    width: 16.5em !important;
     display: flex;
     flex-flow: wrap;
 }
@@ -750,7 +750,7 @@ td span:first-child {
 }
 
 #armor .tooltip {
-    left: -274px;
+    left: -283px;
 }
 
 #weapons .tooltip {
@@ -903,12 +903,10 @@ span[contenteditable] {
 .tooltip span[contenteditable]:focus,
 .tooltip span[contenteditable]:active,
 .tooltip .essence_name:focus,
-.tooltip .essence_name:active {
-    color: white;
-}
+.tooltip .essence_name:active,
 .tooltip .essence_name:focus option,
 .tooltip .essence_name:active option {
-    color: black;
+    color: white;
 }
 
 

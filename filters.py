@@ -10,6 +10,7 @@ import json
 from base64 import b64encode
 from bs4 import BeautifulSoup
 import re
+import copy
 
 from class_StatTable import Stat_Table
 
@@ -145,13 +146,38 @@ def item_tooltip(context, itemName, itemSlot, itemEssences):
         # the variable which gets inside is jinja2.runtime.Undefined and not None or empty string
         if isinstance(itemEssences, jinja2.runtime.Undefined):
             return str(tooltip_content)
+        
+        # here we already know that our item has essence slots and we will need to create
+        # the HTML elements for handling that, specifically:
+        #
+        # first, a dropdown with a list of all available essences
+        essences_dropdown = item_page_BS.new_tag(name = 'select')
+        essences_dropdown['class'] = 'essence_name'
+        # JS code from https://stackoverflow.com/a/48560262
+        # to solve the annoying issue where our select element is longer than the tooltip
+        # and choosing an option which is outside the tooltip removes the :hover state
+        essences_dropdown['onfocus'] = 'this.size=5;'
+        essences_dropdown['onblur'] = 'this.size=1;'
+        essences_dropdown['onchange'] = 'this.size=1; this.blur();'
+        essences_dropdown_default_option = item_page_BS.new_tag(name = 'option', value = 0, string = 'Empty Essence')
+        essences_dropdown_default_option['selected'] = True
+        essences_dropdown_default_option['disabled'] = True
+        essences_dropdown.append(essences_dropdown_default_option)
+
+        for stat in st.listAllStats():
+            if stat in ['In-Combat Morale Regeneration', 'Non-Combat Morale Regeneration', 'Maximum Power',
+                        'In-Combat Power Regeneration', 'Non-Combat Power Regeneration']:
+                continue
+            essences_dropdown.append(
+                item_page_BS.new_tag(name = 'option', value = stat, string = stat)
+            )
+        
+        # and second, the input for the value of an essence
+        essence_val_input = item_page_BS.new_tag(name = 'span', role = 'textbox', string = '0')
+        essence_val_input['contenteditable'] = 'True'
 
         # essence here is a tuple
         for essence in itemEssences.items():
-
-            # if an item has essence slots but they aren't set
-            if len(essence[1].keys()) == 0:
-                continue
 
             # essence[0] gives the key - in our case 1, 2, 3, etc., i.e. a representation of the index;
             # this is how we find the respective entry in essence_images_list
@@ -162,8 +188,11 @@ def item_tooltip(context, itemName, itemSlot, itemEssences):
             # we take every time the first element because by design this dictionary has only a single key-value pair
 
             # first replace the URLs for the image and its parent link element
-            essence_images_list[int(essence[0]) - 1]['src'] = essence_icon_URLs_list[list(essence[1].keys())[0]]
-            essence_images_list[int(essence[0]) - 1].parent['href'] = essence_icon_URLs_list[list(essence[1].keys())[0]]
+            try:
+                essence_images_list[int(essence[0]) - 1]['src'] = essence_icon_URLs_list[list(essence[1].keys())[0]]
+                essence_images_list[int(essence[0]) - 1].parent['href'] = essence_icon_URLs_list[list(essence[1].keys())[0]]
+            except:
+                pass
 
             # because we cannot modify only the text portion of a a tag's content, we need to copy the tag
             the_SPAN_tag_2nd_parent_of_IMG = essence_images_list[int(essence[0]) - 1].parent.parent.__copy__()
@@ -171,54 +200,45 @@ def item_tooltip(context, itemName, itemSlot, itemEssences):
             the_LI_tag = essence_images_list[int(essence[0]) - 1].parent.parent.parent
             the_LI_tag.clear()
             the_LI_tag.append(the_SPAN_tag_2nd_parent_of_IMG)
-            #the_LI_tag.append(f' +{list(essence[1].values())[0]} {list(essence[1].keys())[0]}')
 
-            # creating the input...
-            essence_val_input_wrapper = item_page_BS.new_tag(name = 'span', role = 'textbox', string = list(essence[1].values())[0])
-            essence_val_input_wrapper['contenteditable'] = 'True'
 
-            # and the dropdown
-            essence_stat_names_dropdown_wrapper = item_page_BS.new_tag(name = 'div')
-            essence_stat_names_dropdown_tag = item_page_BS.new_tag(name = 'select')
-            essence_stat_names_dropdown_tag['name'] = f'essence_{essence[0]}_stat'
-            essence_stat_names_dropdown_tag['class'] = 'essence_name'
-            essence_stat_names_dropdown_wrapper.append(essence_stat_names_dropdown_tag)
+            the_dropdown = copy.deepcopy(essences_dropdown)
+            the_input = copy.deepcopy(essence_val_input)
 
-            for stat in st.listAllStats():
+            if len(essence[1].keys()) != 0: # if the item has essence slots which are set
+                the_dropdown['name'] = f'essence_{essence[0]}_stat'
+                the_dropdown['class'] = 'essence_name'
+                # setting as selected the option which matches the current iteration of the loop
+                tmp_option = the_dropdown.find(name = 'option', attrs = {'value': list(essence[1].keys())[0]})
+                tmp_option['selected'] = True
+                # setting the value of the input
+                the_input.string = str(list(essence[1].values())[0])
+
+            the_LI_tag.append(the_input)
+            the_LI_tag.append(the_dropdown)
+
+            if len(essence[1].keys()) != 0: # if the item has essence slots which are set
+                # and finally, the
+                # Essence Removal Form
+                erf = item_page_BS.new_tag('form', method = 'POST', action = url_for('update_essence', item_slot = itemSlot))
+                erf['class'] = 'remove-item'
+
+                # input[name='essence_1_val']
+                #
+                # holds the number of essence points
+                erf_i_e_value = item_page_BS.new_tag('input', type = 'number')
+                erf_i_e_value['name'] = f'essence_{essence[0]}_val'
+                erf_i_e_value['value'] = 0
                 
-                if stat in ['In-Combat Morale Regeneration', 'Non-Combat Morale Regeneration', 'Maximum Power', 'In-Combat Power Regeneration', 'Non-Combat Power Regeneration']:
-                    continue
+                erf_submit = item_page_BS.new_tag('button', type = 'submit', onclick = 'event.stopPropagation();')
+                erf_submit_img = item_page_BS.new_tag('img', src = url_for('static', filename = 'close.svg'))
 
-                dropdown_option = item_page_BS.new_tag(name = 'option', value = stat, string = stat)
-                
-                if list(essence[1].keys())[0] == stat:
-                    dropdown_option['selected'] = 'selected'
-                essence_stat_names_dropdown_tag.append(dropdown_option)
-            
-            the_LI_tag.append(essence_val_input_wrapper)
-            the_LI_tag.append(essence_stat_names_dropdown_wrapper)
+                erf_submit.append(erf_submit_img)
 
-            # and finally, the
-            # Essence Removal Form
-            erf = item_page_BS.new_tag('form', method = 'POST', action = url_for('update_essence', item_slot = itemSlot))
-            erf['class'] = 'remove-item'
+                erf.append(erf_i_e_value)
+                erf.append(erf_submit)
 
-            # input[name='essence_1_val']
-            #
-            # holds the number of essence points
-            erf_i_e_value = item_page_BS.new_tag('input', type = 'number')
-            erf_i_e_value['name'] = f'essence_{essence[0]}_val'
-            erf_i_e_value['value'] = 0
-            
-            erf_submit = item_page_BS.new_tag('button', type = 'submit', onclick = 'event.stopPropagation();')
-            erf_submit_img = item_page_BS.new_tag('img', src = url_for('static', filename = 'close.svg'))
-
-            erf_submit.append(erf_submit_img)
-
-            erf.append(erf_i_e_value)
-            erf.append(erf_submit)
-
-            the_LI_tag.append(erf)
+                the_LI_tag.append(erf)
 
         to_return = str(tooltip_content)
 
