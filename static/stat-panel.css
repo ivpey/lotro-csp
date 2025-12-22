@@ -650,6 +650,7 @@ td span:first-child {
     font-size: 14px;
     font-variant: normal !important;
     letter-spacing: 0.5px;
+    position: relative;
 }
 .tooltip li.attrib {
     color: limegreen;
@@ -832,15 +833,15 @@ td span:first-child {
 
 
 .tooltip li:has(span[contenteditable]) {
-    /* border-top: 1px solid rgb(75 85 99); */
+    border-top: 1px solid rgb(75 85 99);
     padding: 5px 0px;
     display: flex;
     gap: 5px;
     align-items: anchor-center;
 }
-/* .tooltip li:has(span[contenteditable]):has(+ div) {
+.tooltip li:has(span[contenteditable]):has(+ div) {
     border-bottom: 1px solid rgb(75 85 99);
-} */
+}
 .tooltip .essence_name {
     appearance: none;
     background: none;
@@ -1087,7 +1088,7 @@ this is the default state before clicking any slot
     right: -3px;
 }
 .virtue-images:hover > .remove-virtue,
-tr:has(.item):hover .remove-item {
+tr:has(.img-container .remove-item):hover .img-container .remove-item {
     visibility: visible;
     opacity: 1;
 }
@@ -1113,7 +1114,8 @@ tr:has(.item):hover .remove-item {
 }
 .remove-virtue input,
 .remove-virtue select,
-.remove-item input {
+.remove-item input,
+.remove-item select {
     visibility: hidden;
     display: none;
     width: 0px;
@@ -1121,6 +1123,16 @@ tr:has(.item):hover .remove-item {
 }
 #weapons .item {
     position: relative; /* fixes the position of the small X button */
+}
+
+li:has(span[contenteditable]):hover .remove-item {
+    visibility: visible;
+    opacity: 1;
+}
+li:has(span[contenteditable]) .remove-item {
+    cursor: pointer;
+    top: -12px;
+    right: -15px;
 }
 
 /*

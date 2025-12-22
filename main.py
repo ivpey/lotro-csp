@@ -210,8 +210,10 @@ def load_items():
                     for i in range(essence_count):
                         essence_stat_name = request.form.get('essence_'+str(i+1)+'_stat')
                         essence_val = request.form.get('essence_'+str(i+1)+'_value')
+
                         # handling the case when we submit empty
                         essence_val = 0 if essence_val == '' else essence_val
+
                         if (int(essence_val) != 0 and essence_stat_name != 0):
                             essences[str(i+1)] = {
                                 essence_stat_name : essence_val
@@ -243,6 +245,52 @@ def load_items():
         stat_sheet = stat_sheet,
         old_stats = s['old_stats'])
 
+# endpoint to handle essences
+@app.route("/update_essence", methods = ['POST'])
+def update_essence():
+    s = session_handler(session)
+
+    item_slot = request.args.get('item_slot')
+
+    # for each essence slot of that item, we check if we received something
+    #
+    # the options are:
+    # 1/ stat = None and val = None  --> OK, we don't replace the existing
+    # 2/ stat = str and val = None   --> NOT OK, error
+    # 3/ stat = str and val = int    --> OK, replace 
+    # 4/ stat = None and val = int   --> only OK if val == 0, otherwise error
+    # 
+    essences_current = copy.deepcopy(s['curr_stats'].itemSlots[item_slot]['item-info']['essences'])
+
+    for i in range(len(essences_current)):
+        essence_stat_name = request.form.get('essence_'+str(i+1)+'_stat')
+        essence_val = request.form.get('essence_'+str(i+1)+'_val')
+
+        if (essence_stat_name is None and essence_val is None):
+            continue
+
+        if (
+            (essence_stat_name is not None and essence_val is None)
+            or
+            (essence_stat_name is None and essence_val is not None and int(essence_val) != 0)
+        ):
+            flash('Incomplete essence info was provided.')
+            return redirect(url_for('stats_panel_page', hc = 'y'))
+        
+        if (int(essence_val) == 0):
+            essences_current[str(i+1)] = {}
+        else:
+            essences_current[str(i+1)] = {
+                essence_stat_name: int(essence_val)
+            }         
+
+    s['old_stats'] = copy.deepcopy(s['curr_stats'])
+    s['curr_stats'].itemSlots[item_slot]['item-info']['essences'] =  essences_current
+
+    flash(f'Updated essence for item in slot {item_slot}.')
+
+    return redirect(url_for('stats_panel_page', hc = 'y'))
+
 # endpoint to handle virtues
 @app.route("/update_virtues", methods = ['POST'])
 def update_virtues():
@@ -252,11 +300,10 @@ def update_virtues():
     virtue_name = request.form.get('virtue_name')
     virtue_rank = int(request.form.get('virtue_rank'))
 
-    print(virtue_name)
-
     if (virtue_name not in s['curr_stats'].virtues_list):
 
         flash('Invalid virtue name.')
+        return redirect(url_for('stats_panel_page', hc = 'y'))
 
     if (virtue_rank == 0):
 
@@ -264,7 +311,6 @@ def update_virtues():
         s['curr_stats'].virtueSlots[str(slot_nr)] = {}
 
         flash(f'Removed virtue from slot {slot_nr}.')
-
         return redirect(url_for('stats_panel_page', hc = 'y'))
 
     s['old_stats'] = copy.deepcopy(s['curr_stats'])

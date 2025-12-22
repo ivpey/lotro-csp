@@ -2,7 +2,7 @@
 # import packages
 # ====================
 import jinja2
-from flask import Blueprint
+from flask import Blueprint, url_for
 import urllib
 import requests
 import zlib
@@ -30,7 +30,7 @@ def format_url_unquote(context, val, isItemName = False):
 
 @jinja2.pass_context
 @f_bp.app_template_filter()
-def item_tooltip(context, itemName, itemEssences):
+def item_tooltip(context, itemName, itemSlot, itemEssences):
     try:
 
         #
@@ -177,10 +177,6 @@ def item_tooltip(context, itemName, itemEssences):
             essence_val_input_wrapper = item_page_BS.new_tag(name = 'span', role = 'textbox', string = list(essence[1].values())[0])
             essence_val_input_wrapper['contenteditable'] = 'True'
 
-            #essence_val_input_tag = item_page_BS.new_tag('input', type = 'number', value = list(essence[1].values())[0])
-            #essence_val_input_tag['class'] = 'essence_val'
-            #essence_val_input_wrapper.append(essence_val_input_tag)
-
             # and the dropdown
             essence_stat_names_dropdown_wrapper = item_page_BS.new_tag(name = 'div')
             essence_stat_names_dropdown_tag = item_page_BS.new_tag(name = 'select')
@@ -202,6 +198,27 @@ def item_tooltip(context, itemName, itemEssences):
             the_LI_tag.append(essence_val_input_wrapper)
             the_LI_tag.append(essence_stat_names_dropdown_wrapper)
 
+            # and finally, the
+            # Essence Removal Form
+            erf = item_page_BS.new_tag('form', method = 'POST', action = url_for('update_essence', item_slot = itemSlot))
+            erf['class'] = 'remove-item'
+
+            # input[name='essence_1_val']
+            #
+            # holds the number of essence points
+            erf_i_e_value = item_page_BS.new_tag('input', type = 'number')
+            erf_i_e_value['name'] = f'essence_{essence[0]}_val'
+            erf_i_e_value['value'] = 0
+            
+            erf_submit = item_page_BS.new_tag('button', type = 'submit', onclick = 'event.stopPropagation();')
+            erf_submit_img = item_page_BS.new_tag('img', src = url_for('static', filename = 'close.svg'))
+
+            erf_submit.append(erf_submit_img)
+
+            erf.append(erf_i_e_value)
+            erf.append(erf_submit)
+
+            the_LI_tag.append(erf)
 
         to_return = str(tooltip_content)
 

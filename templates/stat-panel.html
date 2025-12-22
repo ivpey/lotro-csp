@@ -165,7 +165,7 @@
                                 </td>
                                 {% if item_slot[1]['item-info']['name'] %}
                                 <td class="tooltip">
-                                    {{ item_slot[1]['item-info']['name'] | format_url_unquote | item_tooltip(item_slot[1]['item-info']['essences']) | safe }}
+                                    {{ item_slot[1]['item-info']['name'] | format_url_unquote | item_tooltip(item_slot[0], item_slot[1]['item-info']['essences']) | safe }}
                                 </td>
                                 {% endif %}
                             </tr>
@@ -239,7 +239,7 @@
                                 </td>
                                 {% if item_slot[1]['item-info']['name'] %}
                                 <td class="tooltip">
-                                    {{ item_slot[1]['item-info']['name'] | format_url_unquote | item_tooltip(item_slot[1]['item-info']['essences']) | safe }}
+                                    {{ item_slot[1]['item-info']['name'] | format_url_unquote | item_tooltip(item_slot[0], item_slot[1]['item-info']['essences']) | safe }}
                                 </td>
                                 {% endif %}
                             </tr>
@@ -315,7 +315,7 @@
                                 </td>
                                 {% if item_slot[1]['item-info']['name'] %}
                                 <td class="tooltip">
-                                    {{ item_slot[1]['item-info']['name'] | format_url_unquote | item_tooltip(item_slot[1]['item-info']['essences']) | safe }}
+                                    {{ item_slot[1]['item-info']['name'] | format_url_unquote | item_tooltip(item_slot[0], item_slot[1]['item-info']['essences']) | safe }}
                                 </td>
                                 {% endif %}
                             </tr>
