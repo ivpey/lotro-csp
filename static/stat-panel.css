@@ -497,10 +497,6 @@ html.loading .overlay {
     position: absolute;
     z-index: 3;
 }
-#weapons .item + td {
-    top: -170px;
-    left: 130px;
-}
 
 #weapons {
     display: flex;
@@ -514,16 +510,6 @@ html.loading .overlay {
 
 #weapons tr {
     position: unset;
-}
-
-#jewelry .item + td {
-    top: 1px;
-    left: 66px;
-}
-
-#armor .item + td {
-    top: 1px;
-    right: 70px;
 }
 
 .item + td form div {
@@ -759,13 +745,13 @@ td span:first-child {
     left: 175px; /* this should be changed if more weapon slot items are added */
 }
 
-.item:hover + td + td.tooltip,
+.item:hover + td.tooltip,
 .tooltip:hover {
     visibility: visible;
 }
 
-#armor :nth-child(n + 6 of tr) .item + td + td.tooltip,
-#jewelry :nth-child(n + 6 of tr) .item + td + td.tooltip {
+#armor :nth-child(n + 6 of tr) .item + td.tooltip,
+#jewelry :nth-child(n + 6 of tr) .item + td.tooltip {
     top: auto;
     bottom: 3px;
 }
@@ -910,6 +896,17 @@ span[contenteditable] {
 }
 
 
+.tooltip > div > form input {
+    display: none;
+}
+.tooltip > div > form {
+    width: 100%;
+    margin: 15px 5px 5px 5px;
+}
+.tooltip > div > form button {
+    width: 100%;
+}
+
 
 #jewelry .item .img-container,
 #armor .item .img-container,
@@ -927,24 +924,12 @@ span[contenteditable] {
     height: 44px;
 }
 
-/* 
-seen at https://tobiasahlin.com/blog/previous-sibling-css-has/
---
-this is the default state before clicking any slot
-*/
-#jewelry td.item:has(+ .noshow) .inside-img-container,
-#armor td.item:has(+ .noshow) .inside-img-container,
-#weapons td.item:has(+ .noshow) .inside-img-container {
+#jewelry .inside-img-container,
+#armor .inside-img-container,
+#weapons .inside-img-container {
     border: 3px solid black;
-}
-/* this is after clicking on a slot */
-.inside-img-container {
     width: 44px; /* has to be the same size as .img-container img */
     height: 44px; /* has to be the same size as .img-container img */
-    border-style: solid;
-    border-image-slice: 1;
-    border-width: 3px; /* same as .img-container */
-    border-image-source: linear-gradient(0deg,rgba(255, 235, 8, 1) 10%, rgba(149, 149, 148, 0) 69%, rgba(102, 102, 103, 0) 100%);
 }
 
 /*

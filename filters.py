@@ -159,7 +159,7 @@ def item_tooltip(context, itemName, itemSlot, itemEssences):
         essences_dropdown['onfocus'] = 'this.size=5;'
         essences_dropdown['onblur'] = 'this.size=1;'
         essences_dropdown['onchange'] = 'this.size=1; this.blur();'
-        essences_dropdown_default_option = item_page_BS.new_tag(name = 'option', value = 0, string = 'Empty Essence')
+        essences_dropdown_default_option = item_page_BS.new_tag(name = 'option', value = '0', string = 'Empty Essence')
         essences_dropdown_default_option['selected'] = True
         essences_dropdown_default_option['disabled'] = True
         essences_dropdown.append(essences_dropdown_default_option)
@@ -172,9 +172,17 @@ def item_tooltip(context, itemName, itemSlot, itemEssences):
                 item_page_BS.new_tag(name = 'option', value = stat, string = stat)
             )
         
-        # and second, the input for the value of an essence
+        # second, the input for the value of an essence
         essence_val_input = item_page_BS.new_tag(name = 'span', role = 'textbox', string = '0')
         essence_val_input['contenteditable'] = 'True'
+
+        # third, the final form which will handle the transfer of data from our pretty elements
+        # to the backend
+        item_submit_form = item_page_BS.new_tag(name = 'form', action = url_for('load_items', item = itemSlot), method = 'POST')
+        item_submit_form['onsubmit'] = f'event.preventDefault(); populate_form(this, "{itemSlot}");'
+        item_submit_form_itemname_input = item_page_BS.new_tag(name = 'input', type = 'text', value = itemName)
+        item_submit_form_itemname_input['name'] = itemSlot
+        item_submit_form.append(item_submit_form_itemname_input)
 
         # essence here is a tuple
         for essence in itemEssences.items():
@@ -203,10 +211,15 @@ def item_tooltip(context, itemName, itemSlot, itemEssences):
 
 
             the_dropdown = copy.deepcopy(essences_dropdown)
+            the_dropdown['data-slot'] = itemSlot
+            the_dropdown['data-name'] = f'essence_{essence[0]}_stat'
+
             the_input = copy.deepcopy(essence_val_input)
+            the_input['data-slot'] = itemSlot
+            the_input['data-name'] = f'essence_{essence[0]}_value'
 
             if len(essence[1].keys()) != 0: # if the item has essence slots which are set
-                the_dropdown['name'] = f'essence_{essence[0]}_stat'
+                #the_dropdown['name'] = f'essence_{essence[0]}_stat'
                 the_dropdown['class'] = 'essence_name'
                 # setting as selected the option which matches the current iteration of the loop
                 tmp_option = the_dropdown.find(name = 'option', attrs = {'value': list(essence[1].keys())[0]})
@@ -239,6 +252,20 @@ def item_tooltip(context, itemName, itemSlot, itemEssences):
                 erf.append(erf_submit)
 
                 the_LI_tag.append(erf)
+
+            item_submit_form_essencename_input = item_page_BS.new_tag(name = 'input', type = 'text')
+            item_submit_form_essencename_input['name'] = f'essence_{essence[0]}_stat'
+            item_submit_form.append(item_submit_form_essencename_input)
+
+            item_submit_form_essenceval_input = item_page_BS.new_tag(name = 'input', type = 'number')
+            item_submit_form_essenceval_input['name'] = f'essence_{essence[0]}_value'
+            item_submit_form.append(item_submit_form_essenceval_input)
+
+        item_submit_form.append(
+            item_page_BS.new_tag(name = 'button', type = 'submit', string = 'Update item')
+        )
+
+        tooltip_content.append(item_submit_form)
 
         to_return = str(tooltip_content)
 
