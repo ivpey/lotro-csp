@@ -1,3 +1,4 @@
 __pycache__/
 lotro-csp-cache.sqlite
 text.py
+lotro-csp-venv/
