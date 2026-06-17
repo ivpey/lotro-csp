@@ -497,10 +497,6 @@ html.loading .overlay {
     position: absolute;
     z-index: 3;
 }
-#weapons .item + td {
-    top: -170px;
-    left: 130px;
-}
 
 #weapons {
     display: flex;
@@ -514,16 +510,6 @@ html.loading .overlay {
 
 #weapons tr {
     position: unset;
-}
-
-#jewelry .item + td {
-    top: 1px;
-    left: 66px;
-}
-
-#armor .item + td {
-    top: 1px;
-    right: 70px;
 }
 
 .item + td form div {
@@ -640,6 +626,10 @@ td span:first-child {
 -- =================
 */
 
+.tooltip > form {
+    padding: 0.5em;
+}
+
 .tooltip ul {
     list-style: none;
 }
@@ -650,6 +640,7 @@ td span:first-child {
     font-size: 14px;
     font-variant: normal !important;
     letter-spacing: 0.5px;
+    position: relative;
 }
 .tooltip li.attrib {
     color: limegreen;
@@ -711,7 +702,7 @@ td span:first-child {
 }
 
 .tooltip-content.itemtooltip {
-    width: 14em !important;
+    width: 16.5em !important;
     display: flex;
     flex-flow: wrap;
 }
@@ -749,7 +740,10 @@ td span:first-child {
 }
 
 #armor .tooltip {
-    left: -242px;
+    left: -283px;
+}
+#armor .tooltip:has(>form) { /* empty item slot */
+    left: -318px;
 }
 
 #weapons .tooltip {
@@ -758,13 +752,13 @@ td span:first-child {
     left: 175px; /* this should be changed if more weapon slot items are added */
 }
 
-.item:hover + td + td.tooltip,
+.item:hover + td.tooltip,
 .tooltip:hover {
     visibility: visible;
 }
 
-#armor :nth-child(n + 6 of tr) .item + td + td.tooltip,
-#jewelry :nth-child(n + 6 of tr) .item + td + td.tooltip {
+#armor :nth-child(n + 6 of tr) .item + td.tooltip,
+#jewelry :nth-child(n + 6 of tr) .item + td.tooltip {
     top: auto;
     bottom: 3px;
 }
@@ -826,6 +820,101 @@ td span:first-child {
     width: 0px !important;
 }
 
+
+
+
+
+
+.tooltip li:has(span[contenteditable]) {
+    border-top: 1px solid rgb(75 85 99);
+    padding: 5px 0px;
+    display: flex;
+    gap: 5px;
+    align-items: anchor-center;
+}
+.tooltip li:has(span[contenteditable]):has(+ div) {
+    border-bottom: 1px solid rgb(75 85 99);
+}
+.tooltip .essence_name {
+    appearance: none;
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    width: 100%;
+    line-height: 22px;
+    text-wrap: auto;
+    padding: 4px 5px;
+    position: relative;
+}
+.tooltip div:has(> .essence_name):hover {
+    outline:1px solid rgb(75 85 99);
+}
+
+.tooltip div:has(> .essence_name) {
+    position: relative;
+    flex-grow: 1;
+}
+/* seen over at https://blog.logrocket.com/creating-custom-select-dropdown-css/ */
+.tooltip div:has(> .essence_name):after {
+    --size: 0.3rem;
+    position: absolute;
+    content: '';
+    pointer-events: none;
+    border-left: var(--size) solid transparent;
+    border-right: var(--size) solid transparent;
+    border-top: var(--size) solid transparent;
+    top: 13px;
+    right: 5px;
+}
+.tooltip div:has(> .essence_name):hover:after {
+    border-top-color: rgb(75 85 99);
+}
+
+span[contenteditable]:before {
+    content: '+';
+    position: absolute;
+    top: 4px;
+    left: -10px;
+}
+span[contenteditable]:focus,
+span[contenteditable]:active,
+.tooltip .essence_name:focus,
+.tooltip .essence_name:active {
+    outline: 0px solid transparent;
+}
+span[contenteditable] {
+    line-height: 17px;
+    border-bottom: 1px dashed white;
+    padding: 4px 0px;
+    position: relative;
+    margin-left: 6px;
+    max-width: 55px;
+}
+
+
+.tooltip span[contenteditable]:focus,
+.tooltip span[contenteditable]:active,
+.tooltip .essence_name:focus,
+.tooltip .essence_name:active,
+.tooltip .essence_name:focus option,
+.tooltip .essence_name:active option {
+    color: white;
+}
+
+
+.tooltip > div > form input {
+    display: none;
+}
+.tooltip > div > form {
+    width: 100%;
+    margin: 15px 5px 5px 5px;
+}
+.tooltip > div > form button {
+    width: 100%;
+}
+
+
 #jewelry .item .img-container,
 #armor .item .img-container,
 #weapons .item .img-container {
@@ -842,24 +931,12 @@ td span:first-child {
     height: 44px;
 }
 
-/* 
-seen at https://tobiasahlin.com/blog/previous-sibling-css-has/
---
-this is the default state before clicking any slot
-*/
-#jewelry td.item:has(+ .noshow) .inside-img-container,
-#armor td.item:has(+ .noshow) .inside-img-container,
-#weapons td.item:has(+ .noshow) .inside-img-container {
+#jewelry .inside-img-container,
+#armor .inside-img-container,
+#weapons .inside-img-container {
     border: 3px solid black;
-}
-/* this is after clicking on a slot */
-.inside-img-container {
     width: 44px; /* has to be the same size as .img-container img */
     height: 44px; /* has to be the same size as .img-container img */
-    border-style: solid;
-    border-image-slice: 1;
-    border-width: 3px; /* same as .img-container */
-    border-image-source: linear-gradient(0deg,rgba(255, 235, 8, 1) 10%, rgba(149, 149, 148, 0) 69%, rgba(102, 102, 103, 0) 100%);
 }
 
 /*
@@ -1001,7 +1078,7 @@ this is the default state before clicking any slot
     right: -3px;
 }
 .virtue-images:hover > .remove-virtue,
-.img-container:hover .remove-item {
+tr:has(.img-container .remove-item):hover .img-container .remove-item {
     visibility: visible;
     opacity: 1;
 }
@@ -1027,7 +1104,8 @@ this is the default state before clicking any slot
 }
 .remove-virtue input,
 .remove-virtue select,
-.remove-item input {
+.remove-item input,
+.remove-item select {
     visibility: hidden;
     display: none;
     width: 0px;
@@ -1035,6 +1113,16 @@ this is the default state before clicking any slot
 }
 #weapons .item {
     position: relative; /* fixes the position of the small X button */
+}
+
+li:has(span[contenteditable]):hover .remove-item {
+    visibility: visible;
+    opacity: 1;
+}
+li:has(span[contenteditable]) .remove-item {
+    cursor: pointer;
+    top: -12px;
+    right: -15px;
 }
 
 /*
@@ -1080,6 +1168,9 @@ this is the default state before clicking any slot
         left: 115px;
         bottom: 68px;
     }
+    #armor .tooltip:has(>form) { /* empty item slot */
+        left: -268px;
+    }
 }
 
 @media screen and (max-width: 950px) {
@@ -1103,9 +1194,6 @@ this is the default state before clicking any slot
     }
     td form select {
         width: 120px;
-    }
-    #armor .item + td {
-        right: 66px;
     }
     #stat-values table td:nth-child(2) span:first-child {
         margin-left: 100px;
@@ -1133,6 +1221,14 @@ this is the default state before clicking any slot
     }
     #weapons .tooltip {
         left: 80px;
+    }
+    .virtue:last-child .virtue-tooltip,
+    .virtue:nth-last-child(2) .virtue-tooltip {
+        left: auto;
+        right: 0;
+    }
+    #armor .tooltip:has(>form) { /* empty item slot */
+        left: -233px;
     }
 }
 /*
