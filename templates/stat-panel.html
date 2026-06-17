@@ -141,11 +141,17 @@
                                         </div>
                                     </div>
                                 </td>
-                                {% if item_slot[1]['item-info']['name'] %}
                                 <td class="tooltip">
-                                    {{ item_slot[1]['item-info']['name'] | format_url_unquote | item_tooltip(item_slot[0], item_slot[1]['item-info']['essences']) | safe }}
+                                    {% if item_slot[1]['item-info']['name'] %}
+                                        {{ item_slot[1]['item-info']['name'] | format_url_unquote | item_tooltip(item_slot[0], item_slot[1]['item-info']['essences']) | safe }}
+                                    {% else %}
+                                        <form method = 'POST' action = {{ url_for('load_items', item = item_slot[0]) }}>
+                                            <h2>Item name:</h2>
+                                            <input type="text" name="{{item_slot[0]}}">
+                                            <button type="submit">Submit</button>
+                                        </form>
+                                    {% endif %}
                                 </td>
-                                {% endif %}
                             </tr>
                             {% endif %}
                         {% endfor %}
@@ -176,11 +182,17 @@
                                         </div>
                                     </div>
                                 </td>
-                                {% if item_slot[1]['item-info']['name'] %}
                                 <td class="tooltip">
-                                    {{ item_slot[1]['item-info']['name'] | format_url_unquote | item_tooltip(item_slot[0], item_slot[1]['item-info']['essences']) | safe }}
+                                    {% if item_slot[1]['item-info']['name'] %}
+                                        {{ item_slot[1]['item-info']['name'] | format_url_unquote | item_tooltip(item_slot[0], item_slot[1]['item-info']['essences']) | safe }}
+                                    {% else %}
+                                        <form method = 'POST' action = {{ url_for('load_items', item = item_slot[0]) }}>
+                                            <h2>Item name:</h2>
+                                            <input type="text" name="{{item_slot[0]}}">
+                                            <button type="submit">Submit</button>
+                                        </form>
+                                    {% endif %}
                                 </td>
-                                {% endif %}
                             </tr>
                             {% endif %}
                         {% endfor %}
@@ -213,11 +225,17 @@
                                         </div>
                                     </div>
                                 </td>
-                                {% if item_slot[1]['item-info']['name'] %}
                                 <td class="tooltip">
-                                    {{ item_slot[1]['item-info']['name'] | format_url_unquote | item_tooltip(item_slot[0], item_slot[1]['item-info']['essences']) | safe }}
+                                    {% if item_slot[1]['item-info']['name'] %}
+                                        {{ item_slot[1]['item-info']['name'] | format_url_unquote | item_tooltip(item_slot[0], item_slot[1]['item-info']['essences']) | safe }}
+                                    {% else %}
+                                        <form method = 'POST' action = {{ url_for('load_items', item = item_slot[0]) }}>
+                                            <h2>Item name:</h2>
+                                            <input type="text" name="{{item_slot[0]}}">
+                                            <button type="submit">Submit</button>
+                                        </form>
+                                    {% endif %}
                                 </td>
-                                {% endif %}
                             </tr>
                             {% endif %}
                         {% endfor %}

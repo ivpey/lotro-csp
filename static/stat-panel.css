@@ -626,6 +626,10 @@ td span:first-child {
 -- =================
 */
 
+.tooltip > form {
+    padding: 0.5em;
+}
+
 .tooltip ul {
     list-style: none;
 }
@@ -737,6 +741,9 @@ td span:first-child {
 
 #armor .tooltip {
     left: -283px;
+}
+#armor .tooltip:has(>form) { /* empty item slot */
+    left: -318px;
 }
 
 #weapons .tooltip {
@@ -1161,6 +1168,9 @@ li:has(span[contenteditable]) .remove-item {
         left: 115px;
         bottom: 68px;
     }
+    #armor .tooltip:has(>form) { /* empty item slot */
+        left: -268px;
+    }
 }
 
 @media screen and (max-width: 950px) {
@@ -1184,9 +1194,6 @@ li:has(span[contenteditable]) .remove-item {
     }
     td form select {
         width: 120px;
-    }
-    #armor .item + td {
-        right: 66px;
     }
     #stat-values table td:nth-child(2) span:first-child {
         margin-left: 100px;
@@ -1219,6 +1226,9 @@ li:has(span[contenteditable]) .remove-item {
     .virtue:nth-last-child(2) .virtue-tooltip {
         left: auto;
         right: 0;
+    }
+    #armor .tooltip:has(>form) { /* empty item slot */
+        left: -233px;
     }
 }
 /*
