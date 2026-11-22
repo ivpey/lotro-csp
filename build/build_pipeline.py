@@ -21,10 +21,6 @@ formatter = logging.Formatter(
     fmt = '%(asctime)s:%(levelname)s:%(message)s'
 )
 
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
-console_handler.setFormatter(formatter)
-
 # --------------------
 # ITEMSDB
 # --------------------
@@ -39,7 +35,6 @@ itemsdb_file_handler.setFormatter(formatter)
 
 logger_itemsdb = logging.getLogger('build.items_db.build_itemsdb')
 logger_itemsdb.addHandler(itemsdb_file_handler)
-logger_itemsdb.addHandler(console_handler)
 
 parseItems()
 
@@ -57,6 +52,5 @@ icons_file_handler.setFormatter(formatter)
 
 logger_icons = logging.getLogger('build.item_icons.build_itemicons')
 logger_icons.addHandler(icons_file_handler)
-logger_icons.addHandler(console_handler)
 
 parseIcons()
