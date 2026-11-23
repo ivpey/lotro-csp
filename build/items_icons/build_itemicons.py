@@ -11,45 +11,41 @@
     manually but I haven't bothered.
 """
 
-from PIL import Image, ImageFile
-import urllib.request
-import os
+from PIL import Image
+import requests
+from requests.exceptions import HTTPError
 import logging
 import sqlite3
+from io import BytesIO
+from concurrent.futures import ThreadPoolExecutor
 
-from config import SRC_DIR, DATA_DIR, LOGS_DIR
+from config import DATA_DIR
 
 logger = logging.getLogger(__name__)
 
-raw_link = 'https://raw.githubusercontent.com/LotroCompanion/lotro-icons/refs/heads/master/items/'
-
 IMGS_FINAL = DATA_DIR / 'final-imgs'
-IMGS_INTERM = SRC_DIR  / 'intermediate-imgs'
 
-logs_filepath = LOGS_DIR / 'icons_build.log'
-
-def retrieveIconFile(uniqueID:str) -> ImageFile.ImageFile|None:
+def retrieveIconFile(icon: tuple[int, str]) -> Image.Image | None:
     """
-        Pillow can read either a physical file or a byte stream, ergo
-        we need to download the icon first before loading it into pillow.
+        Pillow can read either a physical file or a byte stream. The images are small (~2KB each)
+        so they can be stored in memory, there is no need to constantly write and read from disk.
 
-        If the image file already exists because it was used by a previously processed file,
-        we use that copy instead of downloading another - nevermind that downloading is quick.
+        Args:
+            icon: tuple[int, str] - the output of enumerate() so we can log the index of the currently processed image
     """
+    
+    raw_link = f'https://raw.githubusercontent.com/LotroCompanion/lotro-icons/refs/heads/master/items/{icon[1]}.png'
+    
+    logger.debug(f'Downloading image #{icon[0]}')
+
+    response = requests.get(raw_link)
     try:
-        img = Image.open(IMGS_INTERM / (uniqueID + '.png'))
-    except FileNotFoundError:
-        urllib.request.urlretrieve(
-            # source
-            raw_link + uniqueID + '.png',
-            # destination - not temporary!
-            IMGS_INTERM / (uniqueID + '.png')
-        )
-        img = Image.open(IMGS_INTERM / (uniqueID + '.png'))
-    except Exception as e:
-        logger.warning(f'{uniqueID} - failed to download image. Error message: {e}')
-        img = None
-    return img
+        response.raise_for_status()
+    except HTTPError as e:
+         logger.warning(f'{icon[1]} - retrieve failed with message: {e}')
+         return None
+
+    return Image.open(BytesIO(response.content))
 
 def parseIcons():
     """
@@ -60,47 +56,63 @@ def parseIcons():
         Does not check the output for correctness - e.g. whether the glow is on top of the item-specific icon.
     """
 
+    logger.info('Started processing icons')
+
     with sqlite3.connect(DATA_DIR / 'lotro-csp.db') as conn:
-        crsr = conn.cursor()
-        icons = crsr.execute(
+        # offloading to sqlite the transformation tuple -> list
+        conn.row_factory = lambda cursor, row: row[0]
+        # e.g. 1090519726-1090519044-1090519727-1090623637
+        unique_full_icons: list[str] = conn.cursor().execute(
             """
                 select distinct icon
                 from items
             """
         ).fetchall()
-        icons:list[str] = [icon[0] for icon in icons]
 
-    for idx, icon in enumerate(icons):
+    # breaking down full images (e.g. 1090519726-1090519044-1090519727-1090623637)
+    # into their individual components, and deduplicating by transforming to a set first
+    unique_single_icons = list(set([icon_part for icon in unique_full_icons for icon_part in icon.split('-')]))
 
-        logger.info(f'Processing image {idx} / {len(icons)}')
+    with ThreadPoolExecutor(max_workers = 10) as executor:
+        # calling a list resolves all of the promises into their output objects
+        resolved_img_futures = list(executor.map(retrieveIconFile, enumerate(unique_single_icons)))
 
-        # if a previously processed item uses the same icon, no need to repeat
-        if os.path.isfile(IMGS_FINAL / (icon + '.png')):
-            continue
+    # since we are keeping all images in memory, we need a mapping between their ID and the PIL object
+    downloaded_images = {
+         str(t[0]): t[1] for t in list(zip(unique_single_icons, resolved_img_futures))
+    }
+
+    for idx, full_icon in enumerate(unique_full_icons):
+
+        logger.debug(f'Combining image {idx} / {len(unique_full_icons)}')
 
         # from left to right, they are always in this order even if a shadow or glow is missing:
         # item-specific icon -> rarity-specific background -> black shadow  -> blue glow
-        imgs_refs = icon.split('-')
+        img_components = full_icon.split('-')
 
-        # we always start from the rarity-specific background...
-        base_img = retrieveIconFile(imgs_refs.pop(1))
+        # the first layer is always the rarity-specific background in 2nd position
+        #
+        # we need .copy() to get around the lazy loading behavior of Image.open()
+        # which would mix images in our case and would overlay an image component
+        # over an entire previously processed image
+        base_img: Image.Image = downloaded_images[img_components.pop(1)].copy()
 
-        # download failed for some reason
+        # if download has failed for some reason, it was already logged
         if base_img is None:
             continue
 
-        # ... then from right to left...
-        imgs_refs.reverse()
+        # the rest of the components will be stacked starting from the rightmost one and going left
+        img_components.reverse()
 
-        # ... start layering on top of it
         try:
-            for img_ref in imgs_refs:
-                add_on_top = retrieveIconFile(img_ref)
-                base_img.paste(add_on_top, (0, 0), add_on_top)
-            base_img.save(IMGS_FINAL /  (icon + '.png'))
+            for component in img_components:
+                base_img.paste(downloaded_images[component], (0, 0), downloaded_images[component])
+            base_img.save(IMGS_FINAL /  (full_icon + '.png'))
         except Exception as e:
-            logger.warning(f'#{idx} - {icon} - failed to combine image components with error message: {e}')
+            logger.warning(f'{full_icon} - failed to combine image components with error message: {e}')
             continue
+
+    logger.info('Finished processing icons')
 
 if __name__ == "__main__":
     parseIcons()
