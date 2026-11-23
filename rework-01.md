@@ -92,17 +92,27 @@ The repo holds the individual components of an item's image which are transparen
 - a blue glow in the shape of the item-specific icon
 
 I found a Python package called `Pillow` which lets us manipulate images - also including combining multiple images into one. `Pillow` can read either a physical file or a byte stream, so my pipeline ended up like so:
-1. grab all the icon IDs from SQLite and loop through them
-2. check if a file with this name already exists - this means we already processed it for another item
-3. if it doesn't exist, break down the icon ID into its components
-    1. if a file with the name of the component already exists - we processed it for another icon, there is no need to download again
-    2. if it doesn't exist, retrieve it from the raw link to the GitHub repo
-4. start layering the components. The layering order was a bit of a trial-and-error until I stopped getting errors about incompatible channels and such.
+1. grab all the unique full icons (e.g. `1090520031-1090519042-1090520032-1090526862`) from the items database
+2. split them up into their components and remove any duplicated components
+3. using ThreadPoolExecutor, parallelize the download of each component from the GitHub raw link - before this change, the icons pipeline used to take 30+ minutes, now it finishes in less than 2 minutes
+4. start layering the components - the layering order was a bit of a trial-and-error until I stopped getting errors about incompatible channels and such.
 
-For both pipelines, I save a `.log` with the reason why a certain item was not processed. The logging is organized in such way that INFO level messages like 'Processing item X out of XYZ' are only strreamed to the terminal, while WARNING level messages like 'Item ITEMNAME skipped due to no stats / inadmissible category / etc' are sent both to the terminal and to the file.
+With ThreadPoolExecutor I also stopped saving the image components to disk; we are looking at ~7k images of ~2KB each - nothing that can't fit into memory. This unlocked a funny problem, though - because `PIL.Image.open()` provides lazy loading, the currently processed image component would often be overlaid on top of the previously processed full image. A `.copy()` command solved this.
+
+### Logging
+
+For both pipelines, I save a `.log` with the reason why a certain item was not processed. DEBUG level logs (e.g. "processing item X out of XYZ") are streamed to the terminal only, INFO level logs (e.g. "starting processing of icons") and WARNING level logs (e.g. "inadmissible item" or "failed to download image") additionally go to the file.
 
 It is important to note that when setting up a logger in a `.py` file as `logger = logging.getLogger(__name__)`, it should be referenced by its full module path if we are indeed calling the build script as a module. In my case I am calling it from the main project directory as
 ```
 py -m build.build_pipeline
 ```
 hence my itemsdb logger ends up being called `build.items_db.build_itemsdb`. If it was only called `build_itemsdb` then it would not match the actual logger name and the file will end up empty (ask me how I know...).
+
+### CLI arguments
+
+Given the number of times I wanted to process just a small number of items and icons to test something, I should have added CLI arguments much earlier:
+- `py -m build.build_pipeline --items` to run only items pipeline
+- `py -m build.build_pipeline --icons` to run only the icons pipeline. It reads from the `sqlite` db, so it only works on the items which have already been processed (duh)
+- `py -m build.build_pipeline --items --items-count=100` to process only 100 items
+- `py -m build.build_pipeline --items --items-count=100 --icons` to process only 100 items and their icons

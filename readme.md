@@ -19,4 +19,10 @@ I will be documenting my progress in a few chronological `.md` files broken down
 
 Make sure that the `/src` folder contains `items.xml` from https://github.com/LotroCompanion/lotro-items-db and `progressions.xml` from https://github.com/LotroCompanion/lotro-data/tree/master/lore
 
-Then from the project's root folder execute `py -m build.build_pipeline`.
+The following CLI arguments exist:
+- `py -m build.build_pipeline --items` to run only items pipeline
+- `py -m build.build_pipeline --icons` to run only the icons pipeline. It reads from the `sqlite` db, so it only works on the items which have already been processed (duh)
+- `py -m build.build_pipeline --items --items-count=100` to process only 100 items
+- `py -m build.build_pipeline --items --items-count=100 --icons` to process only 100 items and their icons
+
+Calling with neither of `--items` or `--icons` will do nothing. When the pipeline finishes there is also a helpful message indicating which parts of it ran.
