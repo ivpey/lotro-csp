@@ -30,7 +30,7 @@ items:ET.Element = ET.parse(SRC_DIR / 'items.xml').getroot()
 # comes from https://github.com/LotroCompanion/lotro-data/tree/master/lore
 progressions:ET.Element = ET.parse(SRC_DIR / 'progressions.xml').getroot()
 
-def parseItems():
+def parseItems(count: int | None = None):
     
     db_loc = setup_db('lotro-csp.db')
     db_conn = sqlite3.connect(db_loc)
@@ -46,6 +46,10 @@ def parseItems():
     # and repeating this for as long as there are levels.
     # this way we find that item has a stats element with children stat containing the name of the stat and its progressionID
     for idx, item in enumerate(items.iter('item')):
+
+        if count is not None:
+            if idx >= count:
+                break
 
         logger.debug(f'Processing item {idx} / {len(items)}')
 

@@ -10,12 +10,26 @@ import os
 
 from config import LOGS_DIR
 
-# we want to stream all levels to the terminal, but only save select ones to file,
-# those will be set for each file handler separately
+import argparse
+
+parser = argparse.ArgumentParser(description = "split the build step into parts")
+parser.add_argument("--items", action = 'store_true')
+parser.add_argument("--items-count", type = int, default = None)
+parser.add_argument("--icons", action = 'store_true')
+cli_args = parser.parse_args()
+
+# all levels go to the terminal
 logging.basicConfig(
     level = logging.DEBUG,
     format = '%(asctime)s:%(levelname)s:%(message)s'
 )
+
+# turning off the following annoying messages:
+# DEBUG:Starting new HTTPS connection (1)
+# and
+# DEBUG:STREAM b'IHDR'
+logging.getLogger('urllib3.connectionpool').setLevel(logging.INFO)
+logging.getLogger('PIL.PngImagePlugin').setLevel(logging.INFO)
 
 # this is needed to give the same style to the WARNING messages
 formatter = logging.Formatter(
@@ -26,32 +40,42 @@ formatter = logging.Formatter(
 # ITEMSDB
 # --------------------
 
-if os.path.exists(LOGS_DIR / 'itemsdb_build.log'):
-    os.remove(LOGS_DIR / 'itemsdb_build.log')
+if cli_args.items is True:
 
-itemsdb_file_handler = logging.FileHandler(LOGS_DIR / 'itemsdb_build.log')
+    print('Executing itemsdb step...')
 
-itemsdb_file_handler.setLevel(logging.INFO)
-itemsdb_file_handler.setFormatter(formatter)
+    if os.path.exists(LOGS_DIR / 'itemsdb_build.log'):
+        os.remove(LOGS_DIR / 'itemsdb_build.log')
 
-logger_itemsdb = logging.getLogger('build.items_db.build_itemsdb')
-logger_itemsdb.addHandler(itemsdb_file_handler)
+    itemsdb_file_handler = logging.FileHandler(LOGS_DIR / 'itemsdb_build.log')
 
-parseItems()
+    itemsdb_file_handler.setLevel(logging.INFO)
+    itemsdb_file_handler.setFormatter(formatter)
+
+    logger_itemsdb = logging.getLogger('build.items_db.build_itemsdb')
+    logger_itemsdb.addHandler(itemsdb_file_handler)
+
+    parseItems(count = cli_args.items_count)
 
 # --------------------
 # ITEMS_ICONS
 # --------------------
 
-if os.path.exists(LOGS_DIR / 'icons_build.log'):
-    os.remove(LOGS_DIR / 'icons_build.log')
+if cli_args.icons is True:
 
-icons_file_handler = logging.FileHandler(LOGS_DIR / 'icons_build.log')
+    print('Executing icons step...')
 
-icons_file_handler.setLevel(logging.INFO)
-icons_file_handler.setFormatter(formatter)
+    if os.path.exists(LOGS_DIR / 'icons_build.log'):
+        os.remove(LOGS_DIR / 'icons_build.log')
 
-logger_icons = logging.getLogger('build.item_icons.build_itemicons')
-logger_icons.addHandler(icons_file_handler)
+    icons_file_handler = logging.FileHandler(LOGS_DIR / 'icons_build.log')
 
-parseIcons()
+    icons_file_handler.setLevel(logging.INFO)
+    icons_file_handler.setFormatter(formatter)
+
+    logger_icons = logging.getLogger('build.items_icons.build_itemicons')
+    logger_icons.addHandler(icons_file_handler)
+
+    parseIcons()
+
+print(f'Processed the following: ITEMS = {cli_args.items} // ICONS = {cli_args.icons}')
