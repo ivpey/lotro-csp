@@ -36,9 +36,8 @@ def parseItems():
     db_conn = sqlite3.connect(db_loc)
     crsr = db_conn.cursor()
 
-    logger.info(f'Successfully created and connected to database at {db_loc}.')
+    logger.info('Started processing items.')
 
-    logger.info('Starting items processing from XML...')
     # according to the documentation https://docs.python.org/3/library/xml.etree.elementtree.html
     # we take the root element and start iterating over its children.
     # we can discover the structure as
@@ -48,7 +47,7 @@ def parseItems():
     # this way we find that item has a stats element with children stat containing the name of the stat and its progressionID
     for idx, item in enumerate(items.iter('item')):
 
-        logger.info(f'Processing item {idx} / {len(items)}')
+        logger.debug(f'Processing item {idx} / {len(items)}')
 
         c = item.get('category')
         s = item.get('slot')
@@ -60,7 +59,7 @@ def parseItems():
         #
         # grey/yellow items from the very early game also fall within this category
         if len(item.findall('stats')[0].findall('stat')) == 0:
-            logger.warning(f'#{idx} - {item.get('name')} - skipping due to no stats.')
+            logger.warning(f'{item.get('key')} - {item.get('name')} - skipping due to no stats.')
             continue
 
         # lootbox/embers gear has category = ITEM and admissible slots;
@@ -73,7 +72,7 @@ def parseItems():
                 'MAIN_HAND', 'OFF_HAND', 'RANGED_ITEM', 'CLASS_SLOT'
             ]
         ):
-            logger.warning(f'#{idx} - {item.get('name')} - inadmissible item.')
+            logger.warning(f'{item.get('key')} - {item.get('name')} - inadmissible item.')
             continue        
 
         item_dict = {}
@@ -96,11 +95,11 @@ def parseItems():
         item_dict['stats'], item_dict['progression_ids'] = parseStats(item, db_conn)
 
         if len(item_dict['stats']) == 0:
-            logger.warning(f'#{idx} - {item.get('name')} - no stats were processed.')
+            logger.warning(f'{item.get('key')} - {item.get('name')} - no stats were processed.')
             continue
     
         if len(item_dict['progression_ids']) == 0:
-            logger.warning(f'#{idx} - {item.get('name')} - no progressionIDs were processed.')
+            logger.warning(f'{item.get('key')} - {item.get('name')} - no progressionIDs were processed.')
             continue
     
         with db_conn:
@@ -136,6 +135,8 @@ def parseItems():
                 )
             )
 
+    logger.info('Finished processing items.')
+
 def parseStats(
     item,
     db_conn:sqlite3.Connection,
@@ -152,7 +153,7 @@ def parseStats(
         # sometimes scaling is None because it is actually "ranged" - e.g. Greater Dextrous Boots of Finesse
         # and other scalable items for which one progression is applied between lvls 10-50 and another after lvl 50
         if stat.get('scaling') is None:
-            logger.warning(f'{item.get('name')} - no progressionID available for {stat.get('name')}.')
+            logger.warning(f'{item.get('key')} - {item.get('name')} - no progressionID available for {stat.get('name')}.')
             continue
 
         idb_stat_name = stat.get('name')

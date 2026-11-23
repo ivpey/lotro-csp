@@ -10,9 +10,10 @@ import os
 
 from config import LOGS_DIR
 
-# this ensures that INFO messages do end up streamed to the terminal
+# we want to stream all levels to the terminal, but only save select ones to file,
+# those will be set for each file handler separately
 logging.basicConfig(
-    level = logging.INFO,
+    level = logging.DEBUG,
     format = '%(asctime)s:%(levelname)s:%(message)s'
 )
 
@@ -30,7 +31,7 @@ if os.path.exists(LOGS_DIR / 'itemsdb_build.log'):
 
 itemsdb_file_handler = logging.FileHandler(LOGS_DIR / 'itemsdb_build.log')
 
-itemsdb_file_handler.setLevel(logging.WARNING)
+itemsdb_file_handler.setLevel(logging.INFO)
 itemsdb_file_handler.setFormatter(formatter)
 
 logger_itemsdb = logging.getLogger('build.items_db.build_itemsdb')
@@ -47,7 +48,7 @@ if os.path.exists(LOGS_DIR / 'icons_build.log'):
 
 icons_file_handler = logging.FileHandler(LOGS_DIR / 'icons_build.log')
 
-icons_file_handler.setLevel(logging.WARNING)
+icons_file_handler.setLevel(logging.INFO)
 icons_file_handler.setFormatter(formatter)
 
 logger_icons = logging.getLogger('build.item_icons.build_itemicons')
